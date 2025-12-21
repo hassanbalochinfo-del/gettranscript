@@ -1,0 +1,23 @@
+<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style>
+      .logo-bg { fill: #ef4444; }
+      .logo-text { fill: #ffffff; }
+      @media (prefers-color-scheme: dark) {
+        .logo-bg { fill: #1a1a1a; }
+        .logo-text { fill: #ef4444; }
+      }
+    </style>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle class="logo-bg" cx="90" cy="90" r="85" />
+  
+  <!-- Play button triangle -->
+  <path class="logo-text" d="M 75 60 L 75 120 L 115 90 Z" />
+  
+  <!-- Transcript lines (subtitles) -->
+  <rect class="logo-text" x="50" y="130" width="80" height="4" rx="2" opacity="0.9" />
+  <rect class="logo-text" x="50" y="140" width="65" height="4" rx="2" opacity="0.7" />
+  <rect class="logo-text" x="50" y="150" width="70" height="4" rx="2" opacity="0.8" />
+</svg>
