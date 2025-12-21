@@ -1,23 +1,23 @@
 <svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <style>
-      .logo-bg { fill: #ef4444; }
-      .logo-text { fill: #ffffff; }
-      @media (prefers-color-scheme: dark) {
-        .logo-bg { fill: #1a1a1a; }
-        .logo-text { fill: #ef4444; }
-      }
-    </style>
-  </defs>
+  <!-- Green background -->
+  <rect width="180" height="180" rx="36" fill="#10b981"/>
   
-  <!-- Background circle -->
-  <circle class="logo-bg" cx="90" cy="90" r="85" />
+  <!-- GT Letters - Bold, modern -->
+  <g transform="translate(30, 30)">
+    <!-- G -->
+    <path fill="white" d="M25 15C25 8.37258 30.3726 3 37 3H55C58.3137 3 61 5.68629 61 9V21C61 24.3137 58.3137 27 55 27H45V33H55C61.6274 33 67 27.6274 67 21V9C67 2.37258 61.6274 -3 55 -3H37C30.3726 -3 25 2.37258 25 9V15Z"/>
+    <circle fill="white" cx="49" cy="15" r="4"/>
+    
+    <!-- T -->
+    <path fill="white" d="M75 3H95C98.3137 3 101 5.68629 101 9C101 12.3137 98.3137 15 95 15H85V27C85 30.3137 82.3137 33 79 33C75.6863 33 73 30.3137 73 27V15H75C78.3137 15 81 12.3137 81 9C81 5.68629 78.3137 3 75 3Z"/>
+  </g>
   
-  <!-- Play button triangle -->
-  <path class="logo-text" d="M 75 60 L 75 120 L 115 90 Z" />
-  
-  <!-- Transcript lines (subtitles) -->
-  <rect class="logo-text" x="50" y="130" width="80" height="4" rx="2" opacity="0.9" />
-  <rect class="logo-text" x="50" y="140" width="65" height="4" rx="2" opacity="0.7" />
-  <rect class="logo-text" x="50" y="150" width="70" height="4" rx="2" opacity="0.8" />
+  <!-- Transcript lines (minimalistic) -->
+  <g transform="translate(30, 100)" fill="white">
+    <rect x="0" y="0" width="120" height="5" rx="2.5"/>
+    <rect x="0" y="14" width="100" height="5" rx="2.5"/>
+    <rect x="0" y="28" width="110" height="5" rx="2.5"/>
+    <rect x="0" y="42" width="95" height="5" rx="2.5"/>
+    <rect x="0" y="56" width="105" height="5" rx="2.5"/>
+  </g>
 </svg>

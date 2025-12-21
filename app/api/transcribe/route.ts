@@ -173,7 +173,7 @@ export async function POST(req: Request) {
       { ok: false, code: "INVALID_INPUT", error: "Expected JSON body." },
       { status: 400 }
     );
-  }
+    }
 
   const url = (body?.url || "").toString().trim();
   const format: TranscriptFormat = body?.format === "json" ? "json" : "text";
@@ -182,7 +182,7 @@ export async function POST(req: Request) {
 
   if (!url) {
     return NextResponse.json({ ok: false, code: "INVALID_INPUT", error: "Missing url." }, { status: 400 });
-  }
+    }
 
   const cacheKey = buildCacheKey({ url, format, includeTimestamp, sendMetadata });
   const cached = getCached(cacheKey);
@@ -192,11 +192,11 @@ export async function POST(req: Request) {
 
   const upstream = await callTranscriptApi({ url, format, includeTimestamp, sendMetadata });
   if (!upstream.ok) {
-    return NextResponse.json(
+      return NextResponse.json(
       { ok: false, provider: "transcriptapi", code: upstream.code, error: upstream.message, detail: upstream.detail ?? null },
       { status: upstream.status }
-    );
-  }
+      );
+    }
 
   const data = upstream.data;
   const responsePayload: any = {
