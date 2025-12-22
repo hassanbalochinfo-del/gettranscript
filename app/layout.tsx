@@ -103,16 +103,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`font-sans antialiased`}>
+      <head>
         {/* Google tag (gtag.js) */}
-        <Script
+        <script
           async
           src="https://www.googletagmanager.com/gtag/js?id=AW-17823016947"
-          strategy="beforeInteractive"
-        />
-        <Script
-          id="google-gtag-init"
-          strategy="beforeInteractive"
+        ></script>
+        <script
           dangerouslySetInnerHTML={{
             __html: `
               window.dataLayer = window.dataLayer || [];
@@ -121,7 +118,9 @@ export default function RootLayout({
               gtag('config', 'AW-17823016947');
             `,
           }}
-        />
+        ></script>
+      </head>
+      <body className={`font-sans antialiased`}>
         <Script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1227520669715406"
