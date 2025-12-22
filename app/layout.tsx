@@ -10,12 +10,71 @@ import "./globals.css"
 const _inter = Inter({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://gettranscript.com"
+const siteName = "GetTranscript"
+const siteDescription = "Get instant YouTube transcripts for free. Paste a YouTube link and extract clean transcripts in seconds. Copy, download, and use transcripts with timestamps. Works with YouTube videos and Shorts."
+
 export const metadata: Metadata = {
-  title: "GetTranscript - Instant YouTube Transcripts",
-  description:
-    "Paste a YouTube link and get a clean transcript in seconds. Copy, download, and use it however you need.",
-  generator: "v0.app",
-  keywords: ["transcript", "video transcription", "YouTube transcript", "YouTube Shorts transcript"],
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: `${siteName} - Instant YouTube Transcripts | Free Transcript Generator`,
+    template: `%s | ${siteName}`,
+  },
+  description: siteDescription,
+  keywords: [
+    "YouTube transcript",
+    "video transcript",
+    "YouTube Shorts transcript",
+    "transcript generator",
+    "free transcript",
+    "YouTube captions",
+    "video transcription",
+    "YouTube subtitle extractor",
+    "transcript download",
+    "YouTube text extractor",
+  ],
+  authors: [{ name: siteName }],
+  creator: siteName,
+  publisher: siteName,
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: siteUrl,
+    siteName,
+    title: `${siteName} - Instant YouTube Transcripts`,
+    description: siteDescription,
+    images: [
+      {
+        url: `${siteUrl}/logo.svg`,
+        width: 180,
+        height: 180,
+        alt: `${siteName} Logo`,
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${siteName} - Instant YouTube Transcripts`,
+    description: siteDescription,
+    images: [`${siteUrl}/logo.svg`],
+    creator: "@gettranscript",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
@@ -26,6 +85,15 @@ export const metadata: Metadata = {
       { url: "/apple-icon.png", sizes: "180x180", type: "image/png" },
     ],
   },
+  alternates: {
+    canonical: siteUrl,
+  },
+  verification: {
+    // Add your verification codes here when available
+    // google: "your-google-verification-code",
+    // yandex: "your-yandex-verification-code",
+    // yahoo: "your-yahoo-verification-code",
+  },
 }
 
 export default function RootLayout({
@@ -33,19 +101,15 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const adSenseClient = process.env.NEXT_PUBLIC_ADSENSE_CLIENT
-
   return (
     <html lang="en">
       <body className={`font-sans antialiased`}>
-        {adSenseClient ? (
-          <Script
-            async
-            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adSenseClient}`}
-            crossOrigin="anonymous"
-            strategy="afterInteractive"
-          />
-        ) : null}
+        <Script
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1227520669715406"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
           {children}
           <Toaster />

@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import type { Metadata } from "next"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -8,6 +9,9 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
 import { toast } from "sonner"
+
+// Note: Metadata export doesn't work in client components
+// Metadata is handled via layout.tsx for client components
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({

@@ -1,6 +1,26 @@
+import type { Metadata } from "next"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://gettranscript.com"
+
+export const metadata: Metadata = {
+  title: "Terms of Service - GetTranscript",
+  description: "GetTranscript Terms of Service. Read our terms and conditions for using our free YouTube transcript service.",
+  robots: {
+    index: true,
+    follow: true,
+  },
+  openGraph: {
+    title: "Terms of Service - GetTranscript",
+    description: "GetTranscript Terms of Service. Read our terms and conditions.",
+    url: `${siteUrl}/terms-of-service`,
+  },
+  alternates: {
+    canonical: `${siteUrl}/terms-of-service`,
+  },
+}
 
 export default function TermsOfServicePage() {
   return (

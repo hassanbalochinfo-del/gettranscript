@@ -1,8 +1,24 @@
+import type { Metadata } from "next"
 import Link from "next/link"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { BLOG_POSTS } from "@/lib/blog/posts"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://gettranscript.com"
+
+export const metadata: Metadata = {
+  title: "Blog - GetTranscript",
+  description: "Read guides and tips for getting the most out of YouTube transcripts. Learn how to extract, use, and optimize transcripts for your workflow.",
+  openGraph: {
+    title: "Blog - GetTranscript",
+    description: "Read guides and tips for getting the most out of YouTube transcripts.",
+    url: `${siteUrl}/blog`,
+  },
+  alternates: {
+    canonical: `${siteUrl}/blog`,
+  },
+}
 
 export default function BlogIndexPage() {
   return (

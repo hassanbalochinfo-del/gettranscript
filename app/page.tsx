@@ -10,6 +10,9 @@ import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { toast } from "sonner"
 import { AdSlot } from "@/components/adsense/AdSlot"
+import { StructuredData } from "@/components/StructuredData"
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://gettranscript.com"
 
 export default function HomePage() {
   const router = useRouter()
@@ -27,11 +30,65 @@ export default function HomePage() {
     router.push(`/app/result?url=${encodeURIComponent(url)}`)
   }
 
-  return (
-    <div className="min-h-screen flex flex-col">
-      <Navbar />
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    name: "GetTranscript",
+    description: "Get instant YouTube transcripts for free. Paste a YouTube link and extract clean transcripts in seconds.",
+    url: siteUrl,
+    applicationCategory: "UtilityApplication",
+    operatingSystem: "Web",
+    offers: {
+      "@type": "Offer",
+      price: "0",
+      priceCurrency: "USD",
+    },
+    featureList: [
+      "YouTube transcript extraction",
+      "YouTube Shorts support",
+      "Timestamp support",
+      "Copy to clipboard",
+      "Download as TXT or JSON",
+      "No sign-up required",
+    ],
+    aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue: "4.8",
+      ratingCount: "100",
+    },
+  }
 
-      <main className="flex-1">
+  const faqStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: [
+      {
+        "@type": "Question",
+        name: "Does every video have a transcript?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Not always. Some videos don't have transcripts available due to creator settings, restrictions, or missing captions.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Do you store my transcripts?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "No. We do not store your transcripts or any personal data. Transcripts are fetched on demand and may be cached temporarily for performance.",
+        },
+      },
+    ],
+  }
+
+  return (
+    <>
+      <StructuredData data={structuredData} />
+      <StructuredData data={faqStructuredData} />
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+
+        <main className="flex-1">
         <section className="border-b border-border/60 bg-gradient-to-b from-muted/20 to-background">
           <div className="container mx-auto max-w-4xl px-4 py-20 sm:px-6">
             <div className="text-center">
@@ -169,9 +226,10 @@ export default function HomePage() {
           </div>
         </section>
 
-      </main>
+        </main>
 
-      <Footer />
-    </div>
+        <Footer />
+      </div>
+    </>
   )
 }

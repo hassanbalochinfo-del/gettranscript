@@ -1,8 +1,24 @@
+import type { Metadata } from "next"
 import Link from "next/link"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://gettranscript.com"
+
+export const metadata: Metadata = {
+  title: "Features - GetTranscript",
+  description: "Discover all features of GetTranscript: YouTube transcript extraction, timestamps, copy & download, video embed, and more. Free, fast, and no sign-up required.",
+  openGraph: {
+    title: "Features - GetTranscript",
+    description: "Discover all features of GetTranscript: YouTube transcript extraction, timestamps, copy & download, and more.",
+    url: `${siteUrl}/features`,
+  },
+  alternates: {
+    canonical: `${siteUrl}/features`,
+  },
+}
 
 export default function FeaturesPage() {
   return (

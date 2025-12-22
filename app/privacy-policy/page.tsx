@@ -1,6 +1,26 @@
+import type { Metadata } from "next"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://gettranscript.com"
+
+export const metadata: Metadata = {
+  title: "Privacy Policy - GetTranscript",
+  description: "GetTranscript Privacy Policy. We do not store your transcripts or personal data. Learn how we protect your privacy.",
+  robots: {
+    index: true,
+    follow: true,
+  },
+  openGraph: {
+    title: "Privacy Policy - GetTranscript",
+    description: "GetTranscript Privacy Policy. We do not store your transcripts or personal data.",
+    url: `${siteUrl}/privacy-policy`,
+  },
+  alternates: {
+    canonical: `${siteUrl}/privacy-policy`,
+  },
+}
 
 export default function PrivacyPolicyPage() {
   return (
