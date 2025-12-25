@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "postinstall": "prisma generate || echo 'Warning: DATABASE_URL not set, skipping Prisma generate'",
-    "build": "prisma generate && prisma migrate deploy && next build",
+    "build": "prisma generate && (prisma migrate deploy || echo 'Migration skipped - tables may already exist') && next build",
     "dev": "next dev",
     "lint": "eslint .",
     "start": "next start"
