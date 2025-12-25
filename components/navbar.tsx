@@ -2,11 +2,13 @@
 
 import Link from "next/link"
 import { useState } from "react"
+import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import { Menu, X } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 
 export function Navbar() {
+  const { data: session, status } = useSession()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
@@ -31,9 +33,20 @@ export function Navbar() {
             Contact
           </Link>
           <ThemeToggle />
-          <Button asChild size="sm">
-            <Link href="/#features">Get started</Link>
-          </Button>
+          {status === "authenticated" ? (
+            <Button asChild size="sm" variant="outline">
+              <Link href="/account">Account</Link>
+            </Button>
+          ) : (
+            <>
+              <Button asChild size="sm" variant="ghost">
+                <Link href="/login">Log in</Link>
+              </Button>
+              <Button asChild size="sm">
+                <Link href="/signup">Sign up</Link>
+              </Button>
+            </>
+          )}
         </div>
 
         {/* Mobile menu button */}
@@ -58,9 +71,20 @@ export function Navbar() {
             <Link href="/contact" className="text-sm text-muted-foreground" onClick={() => setMobileMenuOpen(false)}>
               Contact
             </Link>
-            <Button asChild size="sm" onClick={() => setMobileMenuOpen(false)}>
-              <Link href="/#features">Get started</Link>
+            {status === "authenticated" ? (
+              <Button asChild size="sm" variant="outline" onClick={() => setMobileMenuOpen(false)}>
+                <Link href="/account">Account</Link>
               </Button>
+            ) : (
+              <>
+                <Button asChild size="sm" variant="ghost" onClick={() => setMobileMenuOpen(false)}>
+                  <Link href="/login">Log in</Link>
+                </Button>
+                <Button asChild size="sm" onClick={() => setMobileMenuOpen(false)}>
+                  <Link href="/signup">Sign up</Link>
+                </Button>
+              </>
+            )}
           </div>
         </div>
       )}

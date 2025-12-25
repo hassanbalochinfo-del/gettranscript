@@ -213,39 +213,81 @@ export default function ResultClient() {
     setTimeout(() => setCopied(false), 1500)
   }
 
-  const handleDownload = (format: "txt" | "json" = "txt") => {
+  const handleDownload = async (format: "txt" | "json" = "txt") => {
     if (!displayText) return
 
-    let content = displayText
-    let mimeType = "text/plain"
-    let filenameBase = (metadata?.title || title || "transcript").replace(/[^\w\s-]+/g, "").trim() || "transcript"
+    setLoading(true)
 
-    if (format === "json") {
-      mimeType = "application/json"
-      content = JSON.stringify(
-        {
-          title: metadata?.title || title,
-          videoId,
-          language,
-          sourceUrl: url || undefined,
-          segments,
-          metadata,
+    try {
+      let content: string
+      if (format === "json") {
+        content = JSON.stringify(
+          {
+            title: metadata?.title || title,
+            videoId,
+            language,
+            sourceUrl: url || undefined,
+            segments,
+            metadata,
+          },
+          null,
+          2
+        )
+      } else {
+        content = displayText
+      }
+
+      const response = await fetch("/api/transcript/export", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-        null,
-        2
-      )
-    }
+        body: JSON.stringify({
+          format,
+          content,
+          metadata: {
+            title: metadata?.title || title,
+            videoId,
+            language,
+          },
+        }),
+      })
 
-    const blob = new Blob([content], { type: mimeType })
-    const blobUrl = URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = blobUrl
-    a.download = `${filenameBase}.${format}`
-    document.body.appendChild(a)
-    a.click()
-    document.body.removeChild(a)
-    URL.revokeObjectURL(blobUrl)
-    toast.success(`Downloaded ${format.toUpperCase()}`)
+      if (!response.ok) {
+        const error = await response.json()
+        
+        if (response.status === 401) {
+          toast.error("Please log in to export transcripts")
+          router.push("/login")
+          return
+        }
+        
+        if (response.status === 403 || response.status === 402) {
+          toast.error(error.error || "Subscription required")
+          router.push("/pricing")
+          return
+        }
+
+        throw new Error(error.error || "Export failed")
+      }
+
+      // Download the file
+      const blob = await response.blob()
+      const blobUrl = URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = blobUrl
+      a.download = response.headers.get("Content-Disposition")?.split('filename="')[1]?.split('"')[0] || `transcript.${format}`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(blobUrl)
+      
+      toast.success(`Downloaded ${format.toUpperCase()}`)
+    } catch (error: any) {
+      toast.error(error.message || "Failed to export transcript")
+    } finally {
+      setLoading(false)
+    }
   }
 
   const onClickSegment = (idx: number) => {

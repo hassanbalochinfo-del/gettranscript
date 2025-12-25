@@ -4,7 +4,7 @@ import { Inter, Geist_Mono } from "next/font/google"
 import Script from "next/script"
 import { Analytics } from "@vercel/analytics/next"
 import { Toaster } from "@/components/ui/sonner"
-import { ThemeProvider } from "@/components/theme-provider"
+import { Providers } from "@/components/providers"
 import "./globals.css"
 
 const _inter = Inter({ subsets: ["latin"] })
@@ -127,10 +127,10 @@ export default function RootLayout({
           crossOrigin="anonymous"
           strategy="afterInteractive"
         />
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+        <Providers>
           {children}
           <Toaster />
-        </ThemeProvider>
+        </Providers>
         <Analytics />
       </body>
     </html>

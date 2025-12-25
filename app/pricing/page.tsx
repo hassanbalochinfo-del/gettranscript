@@ -2,83 +2,62 @@ import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Check, X } from "lucide-react"
-import Link from "next/link"
+import { Check } from "lucide-react"
+import { UI_COPY, PLAN_PRICES, PLAN_CREDITS } from "@/lib/constants"
 
 const plans = [
   {
-    name: "Free",
-    price: "$0",
-    period: "forever",
-    description: "Perfect for trying out GetTranscript",
-    features: [
-      { name: "5 transcripts per day", included: true },
-      { name: "Videos up to 30 minutes", included: true },
-      { name: "Basic export formats (TXT, SRT)", included: true },
-      { name: "7-day transcript history", included: true },
-      { name: "Speaker detection", included: false },
-      { name: "Priority processing", included: false },
-      { name: "DOCX & PDF exports", included: false },
-      { name: "Unlimited history", included: false },
-    ],
-    cta: "Get started",
-    href: "/",
+    name: "Starter",
+    price: PLAN_PRICES.starter,
+    credits: PLAN_CREDITS.starter,
+    features: UI_COPY.starterFeatures,
+    checkoutUrl: process.env.NEXT_PUBLIC_LS_STARTER_URL || "#",
     highlighted: false,
   },
   {
     name: "Pro",
-    price: "$12",
-    period: "/month",
-    description: "For power users and professionals",
-    features: [
-      { name: "Unlimited transcripts", included: true },
-      { name: "No video length limits", included: true },
-      { name: "All export formats", included: true },
-      { name: "Unlimited transcript history", included: true },
-      { name: "Speaker detection", included: true },
-      { name: "Priority processing", included: true },
-      { name: "DOCX & PDF exports", included: true },
-      { name: "Priority support", included: true },
-    ],
-    cta: "Start free trial",
-    href: "/",
+    price: PLAN_PRICES.pro,
+    credits: PLAN_CREDITS.pro,
+    features: UI_COPY.proFeatures,
+    checkoutUrl: process.env.NEXT_PUBLIC_LS_PRO_URL || "#",
     highlighted: true,
   },
-]
-
-const comparisonFeatures = [
-  { feature: "Transcripts per day", free: "5", pro: "Unlimited" },
-  { feature: "Max video length", free: "30 min", pro: "Unlimited" },
-  { feature: "Processing speed", free: "Standard", pro: "Priority" },
-  { feature: "Export formats", free: "TXT, SRT, VTT", pro: "All formats" },
-  { feature: "Transcript history", free: "7 days", pro: "Unlimited" },
-  { feature: "Speaker detection", free: "No", pro: "Yes" },
-  { feature: "Translation", free: "No", pro: "Coming soon" },
-  { feature: "Support", free: "Community", pro: "Priority" },
+  {
+    name: "Plus",
+    price: PLAN_PRICES.plus,
+    credits: PLAN_CREDITS.plus,
+    features: UI_COPY.plusFeatures,
+    checkoutUrl: process.env.NEXT_PUBLIC_LS_PLUS_URL || "#",
+    highlighted: false,
+  },
 ]
 
 export default function PricingPage() {
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen flex flex-col">
       <Navbar />
 
-      <main className="pb-16 pt-12 sm:pb-24 sm:pt-20">
+      <main className="flex-1 pb-16 pt-12 sm:pb-24 sm:pt-20">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           {/* Header */}
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-foreground sm:text-4xl lg:text-5xl">Simple, transparent pricing</h1>
+            <h1 className="text-3xl font-bold text-foreground sm:text-4xl lg:text-5xl">
+              {UI_COPY.pricingHeadline}
+            </h1>
             <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
-              Start free and upgrade when you need more. No hidden fees, cancel anytime.
+              {UI_COPY.pricingSubhead}
             </p>
           </div>
 
           {/* Pricing Cards */}
-          <div className="mx-auto mt-12 grid max-w-4xl gap-8 md:grid-cols-2">
+          <div className="mx-auto mt-12 grid max-w-5xl gap-6 md:grid-cols-3">
             {plans.map((plan) => (
               <Card
                 key={plan.name}
                 className={`relative flex flex-col ${
-                  plan.highlighted ? "border-primary shadow-xl ring-2 ring-primary" : "border-border"
+                  plan.highlighted
+                    ? "border-primary shadow-xl ring-2 ring-primary"
+                    : "border-border"
                 }`}
               >
                 {plan.highlighted && (
@@ -89,71 +68,76 @@ export default function PricingPage() {
                 <CardHeader className="text-center">
                   <CardTitle className="text-xl text-foreground">{plan.name}</CardTitle>
                   <div className="mt-4 flex items-baseline justify-center gap-1">
-                    <span className="text-4xl font-bold text-foreground">{plan.price}</span>
-                    <span className="text-muted-foreground">{plan.period}</span>
+                    <span className="text-4xl font-bold text-foreground">${plan.price}</span>
+                    <span className="text-muted-foreground">/month</span>
                   </div>
-                  <CardDescription className="mt-2">{plan.description}</CardDescription>
+                  <CardDescription className="mt-2">
+                    {plan.credits} credits per month
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-1 flex-col">
                   <ul className="flex-1 space-y-3">
-                    {plan.features.map((feature) => (
-                      <li key={feature.name} className="flex items-center gap-3">
-                        {feature.included ? (
-                          <Check className="h-4 w-4 shrink-0 text-primary" />
-                        ) : (
-                          <X className="h-4 w-4 shrink-0 text-muted-foreground/50" />
-                        )}
-                        <span className={feature.included ? "text-foreground" : "text-muted-foreground"}>
-                          {feature.name}
-                        </span>
+                    {plan.features.map((feature, idx) => (
+                      <li key={idx} className="flex items-start gap-3">
+                        <Check className="h-4 w-4 shrink-0 text-primary mt-0.5" />
+                        <span className="text-sm text-foreground">{feature}</span>
                       </li>
                     ))}
                   </ul>
-                  <Button className="mt-8 w-full" variant={plan.highlighted ? "default" : "outline"} size="lg" asChild>
-                    <Link href={plan.href}>{plan.cta}</Link>
+                  <Button
+                    className="mt-8 w-full"
+                    variant={plan.highlighted ? "default" : "outline"}
+                    size="lg"
+                    asChild
+                  >
+                    <a href={plan.checkoutUrl} target="_blank" rel="noopener noreferrer">
+                      {UI_COPY.getStarted}
+                    </a>
                   </Button>
                 </CardContent>
               </Card>
             ))}
           </div>
 
-          {/* Comparison Table */}
-          <div className="mx-auto mt-20 max-w-4xl">
-            <h2 className="text-center text-2xl font-bold text-foreground">Feature comparison</h2>
-            <div className="mt-8 overflow-hidden rounded-xl border border-border">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border bg-muted/50">
-                    <th className="px-6 py-4 text-left text-sm font-semibold text-foreground">Feature</th>
-                    <th className="px-6 py-4 text-center text-sm font-semibold text-foreground">Free</th>
-                    <th className="px-6 py-4 text-center text-sm font-semibold text-primary">Pro</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border">
-                  {comparisonFeatures.map((row) => (
-                    <tr key={row.feature}>
-                      <td className="px-6 py-4 text-sm text-foreground">{row.feature}</td>
-                      <td className="px-6 py-4 text-center text-sm text-muted-foreground">{row.free}</td>
-                      <td className="px-6 py-4 text-center text-sm font-medium text-foreground">{row.pro}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          {/* FAQs */}
+          <div className="mx-auto mt-20 max-w-3xl">
+            <h2 className="text-center text-2xl font-bold text-foreground mb-8">
+              Frequently asked questions
+            </h2>
+            <div className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">{UI_COPY.faqCreditsRollover.q}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">{UI_COPY.faqCreditsRollover.a}</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">{UI_COPY.faqInactiveSubscription.q}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">{UI_COPY.faqInactiveSubscription.a}</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">{UI_COPY.faqRefunds.q}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">{UI_COPY.faqRefunds.a}</p>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">{UI_COPY.faqCancelAnytime.q}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground">{UI_COPY.faqCancelAnytime.a}</p>
+                </CardContent>
+              </Card>
             </div>
-          </div>
-
-          {/* FAQ Link */}
-          <div className="mt-16 text-center">
-            <p className="text-muted-foreground">
-              Have questions?{" "}
-              <Link href="/#faq" className="font-medium text-primary hover:underline">
-                Check our FAQ
-              </Link>{" "}
-              or{" "}
-              <Link href="/contact" className="font-medium text-primary hover:underline">
-                contact us
-              </Link>
-            </p>
           </div>
         </div>
       </main>
