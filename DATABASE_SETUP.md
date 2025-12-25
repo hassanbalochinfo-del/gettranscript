@@ -71,13 +71,13 @@ postgresql://USERNAME:PASSWORD@HOST:PORT/DATABASE?schema=public
 
 **Example:**
 ```
-postgresql://myuser:Sd7PspB1bhmWeXBj@db.example.com:5432/gettranscript?schema=public
+postgresql://myuser:<YOUR_PASSWORD>@db.example.com:5432/gettranscript?schema=public
 ```
 
 **Breaking it down:**
 - `postgresql://` - Protocol (required)
 - `myuser` - Database username
-- `Sd7PspB1bhmWeXBj` - Password (your password)
+- `<YOUR_PASSWORD>` - Password
 - `@db.example.com` - Database host
 - `:5432` - Port (default is 5432)
 - `/gettranscript` - Database name

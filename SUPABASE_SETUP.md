@@ -7,13 +7,13 @@ You have two connection strings from Supabase:
 ### 1. Direct Connection (Port 5432)
 **Use for:** Local development
 ```
-postgresql://postgres:Sd7PspB1bhmWeXBj@db.tzlbxeytvgbiuxsdmzba.supabase.co:5432/postgres?schema=public
+postgresql://postgres:<YOUR_PASSWORD>@db.<PROJECT_REF>.supabase.co:5432/postgres?sslmode=require
 ```
 
 ### 2. Pooled Connection (Port 6543)
 **Use for:** Production/Vercel (better for serverless)
 ```
-postgresql://postgres.tzlbxeytvgbiuxsdmzba:Sd7PspB1bhmWeXBj@aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres?sslmode=require
+postgresql://postgres.<PROJECT_REF>:<YOUR_PASSWORD>@aws-1-<REGION>.pooler.supabase.com:6543/postgres?sslmode=require
 ```
 
 ## Local Setup (.env.local)
@@ -22,7 +22,7 @@ postgresql://postgres.tzlbxeytvgbiuxsdmzba:Sd7PspB1bhmWeXBj@aws-1-ap-southeast-1
 
 Your `.env.local` now has:
 ```env
-DATABASE_URL="postgresql://postgres:Sd7PspB1bhmWeXBj@db.tzlbxeytvgbiuxsdmzba.supabase.co:5432/postgres?schema=public"
+DATABASE_URL="postgresql://postgres:<YOUR_PASSWORD>@db.<PROJECT_REF>.supabase.co:5432/postgres?sslmode=require"
 ```
 
 ## Vercel Setup
@@ -37,12 +37,12 @@ DATABASE_URL="postgresql://postgres:Sd7PspB1bhmWeXBj@db.tzlbxeytvgbiuxsdmzba.sup
    - **Key**: `DATABASE_URL` (runtime / serverless)
    - **Value**: Use the **pooled connection**:
      ```
-     postgresql://postgres.tzlbxeytvgbiuxsdmzba:Sd7PspB1bhmWeXBj@aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres?sslmode=require
+     postgresql://postgres.<PROJECT_REF>:<YOUR_PASSWORD>@aws-1-<REGION>.pooler.supabase.com:6543/postgres?sslmode=require
      ```
    - **Key**: `DIRECT_URL` (migrations / DDL)
    - **Value**: Use the **direct connection** (recommended with SSL):
      ```
-     postgresql://postgres:Sd7PspB1bhmWeXBj@db.tzlbxeytvgbiuxsdmzba.supabase.co:5432/postgres?sslmode=require
+     postgresql://postgres:<YOUR_PASSWORD>@db.<PROJECT_REF>.supabase.co:5432/postgres?sslmode=require
      ```
    - **Environment**: Select **Production**, **Preview**, and **Development**
 6. Click **Save**
@@ -63,8 +63,8 @@ After adding `DATABASE_URL` to Vercel, you need to run migrations.
 **Option B: Via CLI (After Deployment)**
 ```bash
 # Set DATABASE_URL (runtime) + DIRECT_URL (migrations)
-export DATABASE_URL="postgresql://postgres.tzlbxeytvgbiuxsdmzba:Sd7PspB1bhmWeXBj@aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres?sslmode=require"
-export DIRECT_URL="postgresql://postgres:Sd7PspB1bhmWeXBj@db.tzlbxeytvgbiuxsdmzba.supabase.co:5432/postgres?sslmode=require"
+export DATABASE_URL="postgresql://postgres.<PROJECT_REF>:<YOUR_PASSWORD>@aws-1-<REGION>.pooler.supabase.com:6543/postgres?sslmode=require"
+export DIRECT_URL="postgresql://postgres:<YOUR_PASSWORD>@db.<PROJECT_REF>.supabase.co:5432/postgres?sslmode=require"
 
 # Run migrations
 npx prisma migrate deploy
@@ -99,6 +99,8 @@ npm run dev
 - ✅ Never commit `.env.local` to git (already in `.gitignore`)
 - ✅ Only add to Vercel Environment Variables (not in code)
 - ✅ Don't share these publicly
+
+If you ever shared a real password publicly, rotate it in Supabase immediately.
 
 ## Next Steps
 

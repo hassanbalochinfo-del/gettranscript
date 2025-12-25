@@ -65,8 +65,8 @@ postgresql://user:xxxxx@ep-xxx.us-east-2.aws.neon.tech/neondb?sslmode=require
 
 ## Common Mistakes
 
-❌ **Wrong**: `Sd7PspB1bhmWeXBj` (just the password)
-✅ **Correct**: `postgresql://user:Sd7PspB1bhmWeXBj@host:5432/db?schema=public`
+❌ **Wrong**: `<YOUR_PASSWORD>` (just the password)
+✅ **Correct**: `postgresql://user:<YOUR_PASSWORD>@host:5432/db?schema=public`
 
 ❌ **Wrong**: Missing `postgresql://` prefix
 ✅ **Correct**: Must start with `postgresql://` or `postgres://`
