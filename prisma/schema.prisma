@@ -8,6 +8,11 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  // IMPORTANT:
+  // Use a pooled / serverless-friendly URL for runtime (DATABASE_URL),
+  // but a DIRECT (non-pooler) URL for migrations (DIRECT_URL).
+  // This prevents "table does not exist" issues when PgBouncer blocks DDL.
+  directUrl = env("DIRECT_URL")
 }
 
 model User {

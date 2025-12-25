@@ -33,11 +33,16 @@ DATABASE_URL="postgresql://postgres:Sd7PspB1bhmWeXBj@db.tzlbxeytvgbiuxsdmzba.sup
 2. Select your `gettranscript` project
 3. **Settings** → **Environment Variables**
 4. Click **Add New**
-5. Enter:
-   - **Key**: `DATABASE_URL`
-   - **Value**: Use the **pooled connection** (better for serverless):
+5. Add **two** variables:
+   - **Key**: `DATABASE_URL` (runtime / serverless)
+   - **Value**: Use the **pooled connection**:
      ```
      postgresql://postgres.tzlbxeytvgbiuxsdmzba:Sd7PspB1bhmWeXBj@aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres?sslmode=require
+     ```
+   - **Key**: `DIRECT_URL` (migrations / DDL)
+   - **Value**: Use the **direct connection** (recommended with SSL):
+     ```
+     postgresql://postgres:Sd7PspB1bhmWeXBj@db.tzlbxeytvgbiuxsdmzba.supabase.co:5432/postgres?sslmode=require
      ```
    - **Environment**: Select **Production**, **Preview**, and **Development**
 6. Click **Save**
@@ -57,8 +62,9 @@ After adding `DATABASE_URL` to Vercel, you need to run migrations.
 
 **Option B: Via CLI (After Deployment)**
 ```bash
-# Set DATABASE_URL locally (use pooled connection)
+# Set DATABASE_URL (runtime) + DIRECT_URL (migrations)
 export DATABASE_URL="postgresql://postgres.tzlbxeytvgbiuxsdmzba:Sd7PspB1bhmWeXBj@aws-1-ap-southeast-1.pooler.supabase.com:6543/postgres?sslmode=require"
+export DIRECT_URL="postgresql://postgres:Sd7PspB1bhmWeXBj@db.tzlbxeytvgbiuxsdmzba.supabase.co:5432/postgres?sslmode=require"
 
 # Run migrations
 npx prisma migrate deploy
@@ -84,8 +90,8 @@ npm run dev
 
 ## Why Two Connection Strings?
 
-- **Direct (5432)**: Better for local development, supports migrations
-- **Pooled (6543)**: Better for production/serverless, handles connection pooling automatically
+- **Pooled (6543)** (`DATABASE_URL`): Best for production/serverless (prevents “too many connections”)
+- **Direct (5432)** (`DIRECT_URL`): Required for Prisma migrations / table creation (DDL)
 
 ## Security Notes
 

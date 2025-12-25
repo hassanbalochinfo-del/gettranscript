@@ -4,7 +4,7 @@
 
 You **MUST** add these in Vercel before the build will succeed:
 
-### 1. DATABASE_URL (Required for Build)
+### 1. DATABASE_URL + DIRECT_URL (Required for Build + Migrations)
 
 **Format:**
 ```
@@ -18,7 +18,9 @@ postgresql://USERNAME:PASSWORD@HOST:PORT/DATABASE?schema=public
 4. Click **Add New**
 5. Enter:
    - **Key**: `DATABASE_URL`
-   - **Value**: Your full PostgreSQL connection string
+   - **Value**: Your **runtime** PostgreSQL connection string (for serverless, use a pooled URL if available)
+   - **Key**: `DIRECT_URL`
+   - **Value**: Your **direct (non-pooler)** PostgreSQL connection string (required for Prisma migrations / table creation)
    - **Environment**: Select **Production**, **Preview**, and **Development**
 6. Click **Save**
 
@@ -28,7 +30,8 @@ postgresql://USERNAME:PASSWORD@HOST:PORT/DATABASE?schema=public
 postgresql://default:password@ep-xxx.us-east-1.postgres.vercel-storage.com:5432/verceldb?sslmode=require
 
 # Supabase
-postgresql://postgres:password@db.xxx.supabase.co:5432/postgres
+DATABASE_URL  (pooler): postgresql://postgres.PROJECTREF:password@aws-1-REGION.pooler.supabase.com:6543/postgres?sslmode=require
+DIRECT_URL (direct):   postgresql://postgres:password@db.PROJECTREF.supabase.co:5432/postgres?sslmode=require
 
 # Neon
 postgresql://user:password@ep-xxx.us-east-2.aws.neon.tech/neondb?sslmode=require
@@ -90,6 +93,7 @@ For Preview/Development, use:
 ### "Environment variable not found: DATABASE_URL"
 - **Fix**: Make sure you added `DATABASE_URL` in Vercel Environment Variables
 - Make sure you selected the correct environment (Production/Preview)
+ - Also add `DIRECT_URL` so migrations can create tables
 
 ### "URL must start with postgresql://"
 - **Fix**: Your connection string must start with `postgresql://` or `postgres://`
@@ -104,6 +108,6 @@ For Preview/Development, use:
 
 ✅ Code is ready
 ✅ Build script includes `prisma generate`
-⏳ **Waiting for**: `DATABASE_URL` environment variable in Vercel
+⏳ **Waiting for**: `DATABASE_URL` and `DIRECT_URL` environment variables in Vercel
 
-Once you add `DATABASE_URL`, the build will succeed!
+Once you add both, the build will succeed and migrations will create tables (fixing `public.users does not exist`).
