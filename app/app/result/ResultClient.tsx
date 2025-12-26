@@ -100,6 +100,7 @@ export default function ResultClient() {
   const [translatedSegments, setTranslatedSegments] = useState<TranscriptSegment[] | null>(null)
   const [translating, setTranslating] = useState(false)
   const [selectedLanguage, setSelectedLanguage] = useState<string>("")
+  const [aiConfigured, setAiConfigured] = useState(true)
 
   const displaySegments = useMemo(() => {
     return translatedSegments || segments
@@ -223,6 +224,7 @@ export default function ResultClient() {
         setLanguage(String(data.language || ""))
         setMetadata((data.metadata as TranscriptMetadata) ?? null)
         setIsPolished(data.polished === true)
+        setAiConfigured(data.aiConfigured !== false)
 
         const tr = data.transcript
         if (Array.isArray(tr)) {
@@ -363,6 +365,12 @@ export default function ResultClient() {
                   <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
                     <Sparkles className="h-3 w-3" />
                     AI Polished
+                  </div>
+                )}
+                {!aiConfigured && (
+                  <div className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
+                    <Sparkles className="h-3 w-3" />
+                    AI not configured
                   </div>
                 )}
               </div>

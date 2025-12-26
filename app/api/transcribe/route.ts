@@ -244,6 +244,7 @@ export async function POST(req: NextRequest) {
     let isPolished = false
 
     const openaiKey = process.env.OPENAI_API_KEY
+    const aiConfigured = Boolean(openaiKey)
     if (openaiKey) {
       try {
         // Polish segments if timestamps are included
@@ -361,6 +362,7 @@ ${plainText}`
         language,
         metadata,
         polished: isPolished,
+        aiConfigured,
       })
     } else if (format === "json" && !includeTimestamp) {
       // Return plain text when timestamps not requested
@@ -371,6 +373,7 @@ ${plainText}`
         language,
         metadata,
         polished: isPolished,
+        aiConfigured,
       })
     } else {
       // Return as string
@@ -380,6 +383,7 @@ ${plainText}`
         language,
         metadata,
         polished: isPolished,
+        aiConfigured,
       })
     }
   } catch (error: any) {

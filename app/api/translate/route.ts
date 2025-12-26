@@ -4,7 +4,8 @@ export const runtime = "nodejs"
 
 type Segment = { text: string; start?: number; duration?: number }
 
-const SUPPORTED = new Set(["EN", "ES", "FR", "DE", "IT", "PT", "TR", "AR", "HI", "UR"])
+// Keep in sync with the language options shown in the UI.
+const SUPPORTED = new Set(["EN", "ES", "FR", "DE", "IT", "PT", "TR", "AR", "HI", "UR", "RU", "JA", "KO", "ZH"])
 
 function safeJsonParse(text: string) {
   try {
@@ -18,7 +19,11 @@ export async function POST(req: Request) {
   const apiKey = process.env.OPENAI_API_KEY
   if (!apiKey) {
     return NextResponse.json(
-      { ok: false, code: "TRANSLATION_NOT_CONFIGURED", error: "Translation not configured yet." },
+      {
+        ok: false,
+        code: "TRANSLATION_NOT_CONFIGURED",
+        error: "Translation is not configured. Please set OPENAI_API_KEY on the server.",
+      },
       { status: 501 }
     )
   }

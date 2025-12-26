@@ -15,9 +15,9 @@ export async function POST(req: NextRequest) {
     if (!apiKey) {
       // If OpenAI is not configured, return original transcript
       return NextResponse.json({
-        polished: typeof transcript === "string" ? transcript : null,
-        segments: Array.isArray(segments) ? segments : null,
         polished: false,
+        transcript: typeof transcript === "string" ? transcript : null,
+        segments: Array.isArray(segments) ? segments : null,
       })
     }
 
