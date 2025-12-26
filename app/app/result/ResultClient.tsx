@@ -10,7 +10,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
 import { toast } from "sonner"
-import { AdSlot } from "@/components/adsense/AdSlot"
 import { ArrowLeft, Check, Copy, Download, Loader2 } from "lucide-react"
 
 type TranscriptSegment = {
@@ -83,9 +82,6 @@ export default function ResultClient() {
   const url = searchParams.get("url") || ""
   const transcriptParam = searchParams.get("transcript")
   const titleParam = searchParams.get("title")
-
-  const adSenseClient = process.env.NEXT_PUBLIC_ADSENSE_CLIENT
-  const adSenseSlotResult = process.env.NEXT_PUBLIC_ADSENSE_SLOT_RESULT
 
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -342,8 +338,6 @@ export default function ResultClient() {
               </Button>
             </div>
           </div>
-
-          <AdSlot client={adSenseClient} slot={adSenseSlotResult} className="w-full mb-6" />
 
           {!url && !transcriptParam ? (
             <Card className="border-border/60">

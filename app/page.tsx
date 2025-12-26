@@ -5,11 +5,10 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowRight } from "lucide-react"
+import { ArrowRight, Zap, Copy, Download, Clock, Youtube } from "lucide-react"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { toast } from "sonner"
-import { AdSlot } from "@/components/adsense/AdSlot"
 import { StructuredData } from "@/components/StructuredData"
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://gettranscript.com"
@@ -17,9 +16,6 @@ const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://gettranscript.com"
 export default function HomePage() {
   const router = useRouter()
   const [url, setUrl] = useState("")
-
-  const adSenseClient = process.env.NEXT_PUBLIC_ADSENSE_CLIENT
-  const adSenseSlotHome = process.env.NEXT_PUBLIC_ADSENSE_SLOT_HOME
 
   const handleGetTranscript = () => {
     if (!url.trim()) {
@@ -49,7 +45,6 @@ export default function HomePage() {
       "Timestamp support",
       "Copy to clipboard",
       "Download as TXT or JSON",
-      "No sign-up required",
     ],
     aggregateRating: {
       "@type": "AggregateRating",
@@ -90,10 +85,10 @@ export default function HomePage() {
 
         <main className="flex-1">
         <section className="border-b border-border/60 bg-gradient-to-b from-muted/20 to-background">
-          <div className="container mx-auto max-w-4xl px-4 py-20 sm:px-6">
+          <div className="container mx-auto max-w-4xl px-4 py-16 sm:py-20 sm:px-6">
             <div className="text-center">
               <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background px-3 py-1 text-xs text-muted-foreground mb-6">
-                No sign-up • Works with YouTube & Shorts
+                Works with YouTube & Shorts
               </div>
               <h1 className="text-4xl font-semibold tracking-tight text-foreground sm:text-5xl md:text-6xl">
                 Get YouTube Transcript Instantly
@@ -128,75 +123,106 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* Ad slot (optional) */}
-        <div className="container mx-auto max-w-6xl px-4 py-6 sm:px-6">
-          <AdSlot client={adSenseClient} slot={adSenseSlotHome} className="w-full" />
-        </div>
-
-        <section id="features" className="container mx-auto max-w-6xl px-4 py-14 sm:px-6">
-          <div className="grid gap-10 md:grid-cols-3">
-            <div>
-              <h2 className="text-2xl font-semibold tracking-tight">Features</h2>
-              <p className="mt-2 text-sm text-muted-foreground">Everything you need to grab, reuse, and share transcripts.</p>
-            </div>
-            <div className="md:col-span-2 grid gap-4 sm:grid-cols-2">
-              <Card className="border-border/60">
-                <CardHeader className="pb-3">
+        <section id="features" className="container mx-auto max-w-6xl px-4 py-16 sm:px-6">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">Features</h2>
+            <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">Everything you need to extract, copy, and download YouTube transcripts.</p>
+          </div>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <Card className="border-border/60 hover:border-border transition-colors">
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <Zap className="h-5 w-5 text-primary" />
+                  </div>
                   <CardTitle className="text-base">Fast transcripts</CardTitle>
-                </CardHeader>
-                <CardContent className="text-sm text-muted-foreground">
-                  Paste a URL and get a clean transcript with optional timestamps and metadata.
-                </CardContent>
-              </Card>
-              <Card className="border-border/60">
-                <CardHeader className="pb-3">
+                </div>
+              </CardHeader>
+              <CardContent className="text-sm text-muted-foreground">
+                Paste a URL and get a clean transcript with optional timestamps and metadata.
+              </CardContent>
+            </Card>
+            <Card className="border-border/60 hover:border-border transition-colors">
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <Copy className="h-5 w-5 text-primary" />
+                  </div>
                   <CardTitle className="text-base">Copy & download</CardTitle>
-                </CardHeader>
-                <CardContent className="text-sm text-muted-foreground">
-                  One-click copy. Download as TXT or JSON format.
-                </CardContent>
-              </Card>
-              <Card className="border-border/60">
-                <CardHeader className="pb-3">
+                </div>
+              </CardHeader>
+              <CardContent className="text-sm text-muted-foreground">
+                One-click copy. Download as TXT or JSON format.
+              </CardContent>
+            </Card>
+            <Card className="border-border/60 hover:border-border transition-colors">
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <Clock className="h-5 w-5 text-primary" />
+                  </div>
                   <CardTitle className="text-base">Timestamps</CardTitle>
-                </CardHeader>
-                <CardContent className="text-sm text-muted-foreground">
-                  Enable timestamps to navigate and quote specific moments in the video.
-                </CardContent>
-              </Card>
-              <Card className="border-border/60">
-                <CardHeader className="pb-3">
+                </div>
+              </CardHeader>
+              <CardContent className="text-sm text-muted-foreground">
+                Enable timestamps to navigate and quote specific moments in the video.
+              </CardContent>
+            </Card>
+            <Card className="border-border/60 hover:border-border transition-colors">
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <Youtube className="h-5 w-5 text-primary" />
+                  </div>
                   <CardTitle className="text-base">Works with Shorts</CardTitle>
-                </CardHeader>
-                <CardContent className="text-sm text-muted-foreground">
-                  Supports common YouTube URL formats including <span className="font-mono">/shorts/</span>.
-                </CardContent>
-              </Card>
-            </div>
+                </div>
+              </CardHeader>
+              <CardContent className="text-sm text-muted-foreground">
+                Supports common YouTube URL formats including <span className="font-mono">/shorts/</span>.
+              </CardContent>
+            </Card>
           </div>
         </section>
 
         <section className="border-t border-border/60 bg-muted/20">
-          <div className="container mx-auto max-w-6xl px-4 py-14 sm:px-6">
-            <h2 className="text-2xl font-semibold tracking-tight">How it works</h2>
-            <div className="mt-6 grid gap-4 md:grid-cols-3">
-              <Card className="border-border/60">
+          <div className="container mx-auto max-w-6xl px-4 py-16 sm:px-6">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">How it works</h2>
+              <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">Get your transcript in three simple steps</p>
+            </div>
+            <div className="grid gap-6 md:grid-cols-3">
+              <Card className="border-border/60 hover:border-border transition-colors">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-base">1) Paste link</CardTitle>
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-semibold">
+                      1
+                    </div>
+                    <CardTitle className="text-base">Paste link</CardTitle>
+                  </div>
                 </CardHeader>
                 <CardContent className="text-sm text-muted-foreground">Copy a YouTube video link and paste it here.</CardContent>
               </Card>
-              <Card className="border-border/60">
+              <Card className="border-border/60 hover:border-border transition-colors">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-base">2) Get transcript</CardTitle>
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-semibold">
+                      2
+                    </div>
+                    <CardTitle className="text-base">Get transcript</CardTitle>
+                  </div>
                 </CardHeader>
                 <CardContent className="text-sm text-muted-foreground">
                   We fetch the transcript and metadata, then display it in a clean viewer.
                 </CardContent>
               </Card>
-              <Card className="border-border/60">
+              <Card className="border-border/60 hover:border-border transition-colors">
                 <CardHeader className="pb-3">
-                  <CardTitle className="text-base">3) Copy / download</CardTitle>
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-semibold">
+                      3
+                    </div>
+                    <CardTitle className="text-base">Copy / download</CardTitle>
+                  </div>
                 </CardHeader>
                 <CardContent className="text-sm text-muted-foreground">Copy to clipboard or download to your device.</CardContent>
               </Card>
@@ -204,9 +230,11 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="container mx-auto max-w-6xl px-4 py-14 sm:px-6">
-          <h2 className="text-2xl font-semibold tracking-tight">FAQ</h2>
-          <div className="mt-6 grid gap-4 md:grid-cols-2">
+        <section className="container mx-auto max-w-6xl px-4 py-16 sm:px-6">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">Frequently Asked Questions</h2>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2 max-w-4xl mx-auto">
             <Card className="border-border/60">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base">Does every video have a transcript?</CardTitle>

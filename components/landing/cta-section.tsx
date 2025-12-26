@@ -14,7 +14,7 @@ export function CTASection() {
       <div className="mx-auto max-w-6xl px-4 sm:px-6">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-primary-foreground sm:text-3xl">Get your transcript now</h2>
-          <p className="mt-3 text-primary-foreground/80">Start transcribing in seconds - no sign up required</p>
+          <p className="mt-3 text-primary-foreground/80">Start transcribing in seconds</p>
 
           <div className="mx-auto mt-8 flex max-w-xl flex-col gap-3 sm:flex-row">
             <Input
