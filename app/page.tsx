@@ -5,13 +5,42 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowRight, Zap, Copy, Download, Clock, Youtube } from "lucide-react"
+import { ArrowRight, Zap, Copy, Download, Clock, Youtube, Check } from "lucide-react"
+import Link from "next/link"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { toast } from "sonner"
 import { StructuredData } from "@/components/StructuredData"
+import { UI_COPY, PLAN_PRICES, PLAN_CREDITS } from "@/lib/constants"
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://gettranscript.com"
+
+const plans = [
+  {
+    name: "Starter",
+    price: PLAN_PRICES.starter,
+    credits: PLAN_CREDITS.starter,
+    features: UI_COPY.starterFeatures,
+    checkoutUrl: process.env.NEXT_PUBLIC_LS_STARTER_URL || "/pricing",
+    highlighted: false,
+  },
+  {
+    name: "Pro",
+    price: PLAN_PRICES.pro,
+    credits: PLAN_CREDITS.pro,
+    features: UI_COPY.proFeatures,
+    checkoutUrl: process.env.NEXT_PUBLIC_LS_PRO_URL || "/pricing",
+    highlighted: true,
+  },
+  {
+    name: "Plus",
+    price: PLAN_PRICES.plus,
+    credits: PLAN_CREDITS.plus,
+    features: UI_COPY.plusFeatures,
+    checkoutUrl: process.env.NEXT_PUBLIC_LS_PLUS_URL || "/pricing",
+    highlighted: false,
+  },
+]
 
 export default function HomePage() {
   const router = useRouter()
@@ -251,6 +280,75 @@ export default function HomePage() {
                 No. We do not store your transcripts or any personal data. Transcripts are fetched on demand and may be cached temporarily for performance.
               </CardContent>
             </Card>
+          </div>
+        </section>
+
+        <section className="border-t border-border/60 bg-gradient-to-b from-background to-muted/20">
+          <div className="container mx-auto max-w-6xl px-4 py-16 sm:px-6">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">Pricing</h2>
+              <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
+                {UI_COPY.pricingSubhead}
+              </p>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-3 max-w-5xl mx-auto">
+              {plans.map((plan) => (
+                <Card
+                  key={plan.name}
+                  className={`relative flex flex-col transition-all hover:shadow-lg ${
+                    plan.highlighted
+                      ? "border-primary shadow-xl ring-2 ring-primary scale-105"
+                      : "border-border hover:border-border/80"
+                  }`}
+                >
+                  {plan.highlighted && (
+                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground">
+                      Most Popular
+                    </div>
+                  )}
+                  <CardHeader className="text-center">
+                    <CardTitle className="text-xl font-semibold">{plan.name}</CardTitle>
+                    <div className="mt-4 flex items-baseline justify-center gap-1">
+                      <span className="text-4xl font-bold">${plan.price}</span>
+                      <span className="text-muted-foreground">/month</span>
+                    </div>
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      {plan.credits} credits per month
+                    </p>
+                  </CardHeader>
+                  <CardContent className="flex flex-1 flex-col">
+                    <ul className="flex-1 space-y-3 mb-6">
+                      {plan.features.map((feature, idx) => (
+                        <li key={idx} className="flex items-start gap-3">
+                          <Check className="h-5 w-5 shrink-0 text-primary mt-0.5" />
+                          <span className="text-sm text-foreground">{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <Button
+                      className="w-full"
+                      variant={plan.highlighted ? "default" : "outline"}
+                      size="lg"
+                      asChild
+                    >
+                      <Link href={plan.checkoutUrl}>
+                        {UI_COPY.getStarted}
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+
+            <div className="mt-12 text-center">
+              <Button variant="ghost" asChild>
+                <Link href="/pricing">
+                  View all plans and FAQs →
+                </Link>
+              </Button>
+            </div>
           </div>
         </section>
 
