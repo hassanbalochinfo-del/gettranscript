@@ -2,6 +2,14 @@ import { NextResponse } from "next/server"
 
 export const runtime = "nodejs"
 
+/**
+ * Translation endpoint - COMPLETELY FREE
+ * 
+ * IMPORTANT: This endpoint does NOT deduct credits.
+ * Translation is free for all users, regardless of subscription status.
+ * Credits are ONLY deducted when generating transcripts via /api/transcribe.
+ */
+
 type Segment = { text: string; start?: number; duration?: number }
 
 // Keep in sync with the language options shown in the UI.
