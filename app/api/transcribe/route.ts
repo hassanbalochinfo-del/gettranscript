@@ -107,7 +107,7 @@ function pickTranscriptSegments(data: any): { segments: Array<{ text: string; st
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { url, format = "json", includeTimestamp = true, sendMetadata = false, requestId } = body
+    const { url, format = "json", sendMetadata = false, requestId } = body
 
     if (!url) {
       return NextResponse.json({ error: "URL is required" }, { status: 400 })
@@ -243,109 +243,55 @@ export async function POST(req: NextRequest) {
     let polishedTranscript: string | null = null
     let isPolished = false
 
+    // Automatically polish the transcript using AI (silently, no badge shown)
     const openaiKey = process.env.OPENAI_API_KEY
     const aiConfigured = Boolean(openaiKey)
-    if (openaiKey) {
+    
+    // Always return as plain text paragraph (no timestamps, no segments)
+    const plainText = picked.segments.map((s) => s.text).join(" ")
+    let polishedText = plainText
+    
+    if (openaiKey && plainText.trim()) {
       try {
-        // Polish segments if timestamps are included
-        if (includeTimestamp && picked.segments.length > 0) {
-          const texts = picked.segments.map((s) => s.text.trim()).filter(Boolean)
-          
-          if (texts.length > 0) {
-            const prompt = `You are a professional transcript editor. Improve the following transcript segments for readability:
+        const prompt = `You are a professional transcript editor. Improve the following transcript for readability:
 - Fix grammar and spelling errors
 - Add proper punctuation
 - Improve sentence structure and flow
 - Maintain the original meaning and tone
 - Keep the text natural and conversational
+- Format as a clean, readable paragraph
 - Do not change technical terms or proper nouns unless they are misspelled
 
-Return ONLY a valid JSON array of strings, same length and order as the input. Do not add commentary or extra fields.
-
-Input segments:
-${JSON.stringify(texts)}`
-
-            const polishResponse = await fetch("https://api.openai.com/v1/chat/completions", {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${openaiKey}`,
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                model: "gpt-4o-mini",
-                temperature: 0.3,
-                messages: [
-                  {
-                    role: "system",
-                    content: "You are a professional transcript editor. Return only valid JSON arrays.",
-                  },
-                  { role: "user", content: prompt },
-                ],
-              }),
-            })
-
-            if (polishResponse.ok) {
-              const polishData = await polishResponse.json()
-              const content = polishData?.choices?.[0]?.message?.content
-              
-              if (content) {
-                try {
-                  const polishedTexts = JSON.parse(content)
-                  if (Array.isArray(polishedTexts) && polishedTexts.length === texts.length) {
-                    polishedSegments = picked.segments.map((seg, idx) => ({
-                      ...seg,
-                      text: String(polishedTexts[idx] ?? seg.text).trim(),
-                    }))
-                    isPolished = true
-                  }
-                } catch {}
-              }
-            }
-          }
-        } else {
-          // Polish plain text
-          const plainText = picked.segments.map((s) => s.text).join(" ")
-          if (plainText.trim()) {
-            const prompt = `You are a professional transcript editor. Improve the following transcript for readability:
-- Fix grammar and spelling errors
-- Add proper punctuation
-- Improve sentence structure and flow
-- Maintain the original meaning and tone
-- Keep the text natural and conversational
-- Do not change technical terms or proper nouns unless they are misspelled
-
-Return ONLY the polished transcript text, nothing else.
+Return ONLY the polished transcript text as a single clean paragraph, nothing else.
 
 Transcript:
 ${plainText}`
 
-            const polishResponse = await fetch("https://api.openai.com/v1/chat/completions", {
-              method: "POST",
-              headers: {
-                Authorization: `Bearer ${openaiKey}`,
-                "Content-Type": "application/json",
+        const polishResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${openaiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model: "gpt-4o-mini",
+            temperature: 0.3,
+            messages: [
+              {
+                role: "system",
+                content: "You are a professional transcript editor. Return only the polished text as a clean paragraph.",
               },
-              body: JSON.stringify({
-                model: "gpt-4o-mini",
-                temperature: 0.3,
-                messages: [
-                  {
-                    role: "system",
-                    content: "You are a professional transcript editor. Return only the polished text.",
-                  },
-                  { role: "user", content: prompt },
-                ],
-              }),
-            })
+              { role: "user", content: prompt },
+            ],
+          }),
+        })
 
-            if (polishResponse.ok) {
-              const polishData = await polishResponse.json()
-              const polished = polishData?.choices?.[0]?.message?.content?.trim()
-              if (polished) {
-                polishedTranscript = polished
-                isPolished = true
-              }
-            }
+        if (polishResponse.ok) {
+          const polishData = await polishResponse.json()
+          const polished = polishData?.choices?.[0]?.message?.content?.trim()
+          if (polished) {
+            polishedText = polished
+            isPolished = true
           }
         }
       } catch (error) {
@@ -354,38 +300,15 @@ ${plainText}`
       }
     }
 
-    // Format response based on requested format
-    if (format === "json" && includeTimestamp) {
-      return NextResponse.json({
-        transcript: polishedSegments,
-        videoId,
-        language,
-        metadata,
-        polished: isPolished,
-        aiConfigured,
-      })
-    } else if (format === "json" && !includeTimestamp) {
-      // Return plain text when timestamps not requested
-      const plainText = polishedTranscript || polishedSegments.map((s) => s.text).join(" ")
-      return NextResponse.json({
-        transcript: plainText,
-        videoId,
-        language,
-        metadata,
-        polished: isPolished,
-        aiConfigured,
-      })
-    } else {
-      // Return as string
-      return NextResponse.json({
-        transcript: polishedTranscript || polishedSegments.map((s) => s.text).join(" "),
-        videoId,
-        language,
-        metadata,
-        polished: isPolished,
-        aiConfigured,
-      })
-    }
+    // Always return as plain text paragraph (no timestamps, no segments)
+    return NextResponse.json({
+      transcript: polishedText,
+      videoId,
+      language,
+      metadata,
+      polished: isPolished,
+      aiConfigured,
+    })
   } catch (error: any) {
     if (error?.httpStatus === 402 || error?.message === "OUT_OF_CREDITS") {
       return NextResponse.json(

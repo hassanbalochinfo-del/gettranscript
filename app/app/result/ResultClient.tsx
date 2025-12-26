@@ -7,30 +7,15 @@ import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Switch } from "@/components/ui/switch"
-import { Separator } from "@/components/ui/separator"
 import { toast } from "sonner"
 import { ArrowLeft, Check, Copy, Download, Loader2, Languages, Sparkles } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-
-type TranscriptSegment = {
-  text: string
-  start?: number
-  duration?: number
-}
 
 type TranscriptMetadata = {
   title?: string | null
   author_name?: string | null
   author_url?: string | null
   thumbnail_url?: string | null
-}
-
-function formatTimestamp(seconds: number) {
-  const s = Math.max(0, Math.floor(seconds))
-  const mm = String(Math.floor(s / 60)).padStart(2, "0")
-  const ss = String(s % 60).padStart(2, "0")
-  return `${mm}:${ss}`
 }
 
 function isYouTubeChannelUrl(input: string) {
@@ -91,40 +76,25 @@ export default function ResultClient() {
   const [videoId, setVideoId] = useState<string>("")
   const [language, setLanguage] = useState<string>("")
   const [metadata, setMetadata] = useState<TranscriptMetadata | null>(null)
-  const [includeTimestamps, setIncludeTimestamps] = useState<boolean>(true)
-  const [segments, setSegments] = useState<TranscriptSegment[]>([])
   const [copied, setCopied] = useState(false)
-  const [activeIndex, setActiveIndex] = useState<number | null>(null)
-  const segmentRefs = useRef<Array<HTMLDivElement | null>>([])
-  const [isPolished, setIsPolished] = useState(false)
-  const [translatedSegments, setTranslatedSegments] = useState<TranscriptSegment[] | null>(null)
+  const [translatedText, setTranslatedText] = useState<string | null>(null)
   const [translating, setTranslating] = useState(false)
   const [selectedLanguage, setSelectedLanguage] = useState<string>("")
-  const [aiConfigured, setAiConfigured] = useState(true)
-
-  const displaySegments = useMemo(() => {
-    return translatedSegments || segments
-  }, [translatedSegments, segments])
 
   const displayText = useMemo(() => {
-    if (displaySegments.length > 0) {
-      if (includeTimestamps) {
-        return displaySegments
-          .map((s) => (typeof s.start === "number" ? `[${formatTimestamp(s.start)}] ${s.text}` : s.text))
-          .join("\n")
-      }
-      return displaySegments.map((s) => s.text).join(" ")
-    }
-    return rawTranscript || ""
-  }, [displaySegments, includeTimestamps, rawTranscript])
+    return translatedText || rawTranscript || ""
+  }, [translatedText, rawTranscript])
 
   const handleTranslate = async (targetLang: string) => {
-    if (!segments.length || translating) return
+    if (!rawTranscript || translating) return
 
     setTranslating(true)
     setSelectedLanguage(targetLang)
 
     try {
+      // Convert plain text to segments for translation API
+      const segments = [{ text: rawTranscript }]
+      
       const res = await fetch("/api/translate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -141,8 +111,8 @@ export default function ResultClient() {
         throw new Error(data.error || "Translation failed")
       }
 
-      if (data.segments && Array.isArray(data.segments)) {
-        setTranslatedSegments(data.segments)
+      if (data.segments && Array.isArray(data.segments) && data.segments.length > 0) {
+        setTranslatedText(data.segments[0].text)
         toast.success(`Translated to ${targetLang.toUpperCase()}`)
       }
     } catch (error: any) {
@@ -178,7 +148,7 @@ export default function ResultClient() {
       setVideoId("")
       setLanguage("")
       setMetadata(null)
-      setSegments([])
+      setTranslatedText(null)
 
       try {
         const reqId =
@@ -191,7 +161,6 @@ export default function ResultClient() {
           body: JSON.stringify({
             url,
             format: "json",
-            includeTimestamp: includeTimestamps,
             sendMetadata: true,
             requestId: reqId,
           }),
@@ -223,14 +192,10 @@ export default function ResultClient() {
         setVideoId(String(data.videoId || ""))
         setLanguage(String(data.language || ""))
         setMetadata((data.metadata as TranscriptMetadata) ?? null)
-        setIsPolished(data.polished === true)
-        setAiConfigured(data.aiConfigured !== false)
 
-        const tr = data.transcript
-        if (Array.isArray(tr)) {
-          setSegments(tr as TranscriptSegment[])
-        } else if (typeof tr === "string") {
-          setRawTranscript(tr)
+        // Always expect plain text transcript (no segments, no timestamps)
+        if (typeof data.transcript === "string") {
+          setRawTranscript(data.transcript)
         } else {
           setError("Unexpected transcript format returned by server.")
           return
@@ -251,7 +216,7 @@ export default function ResultClient() {
 
     run()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [url, transcriptParam, titleParam, includeTimestamps])
+  }, [url, transcriptParam, titleParam])
 
   const handleCopy = async () => {
     if (!displayText) return
@@ -284,9 +249,9 @@ export default function ResultClient() {
             videoId,
             language: selectedLanguage || language,
             sourceUrl: url || undefined,
-            segments: displaySegments,
+            transcript: displayText,
             metadata,
-            polished: isPolished,
+            translated: translatedText !== null,
           },
           null,
           2
@@ -317,12 +282,6 @@ export default function ResultClient() {
     }
   }
 
-  const onClickSegment = (idx: number) => {
-    setActiveIndex(idx)
-    const el = segmentRefs.current[idx]
-    if (el) el.scrollIntoView({ behavior: "smooth", block: "center" })
-  }
-
   const canShowVideo = Boolean(url && extractYouTubeVideoId(url))
   const embedId = extractYouTubeVideoId(url) || videoId
 
@@ -338,21 +297,7 @@ export default function ResultClient() {
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to home
               </Link>
-              <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-2xl font-semibold tracking-tight">{metadata?.title || title || "Transcript"}</h1>
-                {isPolished && (
-                  <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
-                    <Sparkles className="h-3 w-3" />
-                    AI Polished
-                  </div>
-                )}
-                {!aiConfigured && (
-                  <div className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
-                    <Sparkles className="h-3 w-3" />
-                    AI not configured
-                  </div>
-                )}
-              </div>
+              <h1 className="text-2xl font-semibold tracking-tight">{metadata?.title || title || "Transcript"}</h1>
               {url ? (
                 <p className="mt-1 text-sm text-muted-foreground">
                   Source:{" "}
@@ -364,37 +309,37 @@ export default function ResultClient() {
             </div>
 
             <div className="flex items-center gap-2 flex-wrap">
-              {segments.length > 0 && (
+              {rawTranscript && (
                 <div className="flex items-center gap-2">
                   <Select
                     value={selectedLanguage}
                     onValueChange={handleTranslate}
                     disabled={translating}
                   >
-                    <SelectTrigger className="w-[140px]">
-                      <SelectValue placeholder="Translate" />
+                    <SelectTrigger className="w-[160px]">
+                      <SelectValue placeholder={<><Languages className="h-4 w-4 mr-2 inline" />Translate</>} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="es">Spanish</SelectItem>
-                      <SelectItem value="fr">French</SelectItem>
-                      <SelectItem value="de">German</SelectItem>
-                      <SelectItem value="it">Italian</SelectItem>
-                      <SelectItem value="pt">Portuguese</SelectItem>
-                      <SelectItem value="ru">Russian</SelectItem>
-                      <SelectItem value="ja">Japanese</SelectItem>
-                      <SelectItem value="ko">Korean</SelectItem>
-                      <SelectItem value="zh">Chinese</SelectItem>
-                      <SelectItem value="ar">Arabic</SelectItem>
-                      <SelectItem value="hi">Hindi</SelectItem>
+                      <SelectItem value="es">🇪🇸 Spanish</SelectItem>
+                      <SelectItem value="fr">🇫🇷 French</SelectItem>
+                      <SelectItem value="de">🇩🇪 German</SelectItem>
+                      <SelectItem value="it">🇮🇹 Italian</SelectItem>
+                      <SelectItem value="pt">🇵🇹 Portuguese</SelectItem>
+                      <SelectItem value="ru">🇷🇺 Russian</SelectItem>
+                      <SelectItem value="ja">🇯🇵 Japanese</SelectItem>
+                      <SelectItem value="ko">🇰🇷 Korean</SelectItem>
+                      <SelectItem value="zh">🇨🇳 Chinese</SelectItem>
+                      <SelectItem value="ar">🇸🇦 Arabic</SelectItem>
+                      <SelectItem value="hi">🇮🇳 Hindi</SelectItem>
                     </SelectContent>
                   </Select>
                   {translating && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
-                  {translatedSegments && (
+                  {translatedText && (
                     <Button
                       variant="ghost"
                       size="sm"
                       onClick={() => {
-                        setTranslatedSegments(null)
+                        setTranslatedText(null)
                         setSelectedLanguage("")
                       }}
                     >
@@ -411,7 +356,7 @@ export default function ResultClient() {
                 <Download className="h-4 w-4 mr-2" />
                 Download TXT
               </Button>
-              <Button variant="outline" size="sm" onClick={() => handleDownload("json")} disabled={!displayText || displaySegments.length === 0}>
+              <Button variant="outline" size="sm" onClick={() => handleDownload("json")} disabled={!displayText}>
                 <Download className="h-4 w-4 mr-2" />
                 Download JSON
               </Button>
@@ -471,50 +416,17 @@ export default function ResultClient() {
 
                 <Card className="border-border/60">
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-base">Transcript</CardTitle>
+                    <CardTitle className="text-base">
+                      {translatedText ? "Translated Transcript" : "Transcript"}
+                    </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <Switch checked={includeTimestamps} onCheckedChange={setIncludeTimestamps} />
-                      <span className="text-sm text-muted-foreground">Include timestamps</span>
-                    </div>
-
-                    <Separator />
-
-                    {displaySegments.length > 0 ? (
-                      <div className="max-h-[70vh] overflow-auto rounded-lg border border-border/60">
-                        <div className="p-4 space-y-2">
-                          {displaySegments.map((s, idx) => {
-                            const hasTs = includeTimestamps && typeof s.start === "number"
-                            return (
-                              <div
-                                key={idx}
-                                ref={(el) => {
-                                  segmentRefs.current[idx] = el
-                                }}
-                                className={`rounded-md px-2 py-2 text-sm leading-relaxed ${
-                                  activeIndex === idx ? "bg-primary/10 ring-1 ring-primary/20" : "hover:bg-muted/40"
-                                }`}
-                              >
-                                <div className="flex items-start gap-3">
-                                  {hasTs ? (
-                                    <button
-                                      type="button"
-                                      className="shrink-0 font-mono text-xs text-muted-foreground hover:text-foreground"
-                                      onClick={() => onClickSegment(idx)}
-                                    >
-                                      {formatTimestamp(s.start as number)}
-                                    </button>
-                                  ) : null}
-                                  <div className="text-foreground">{s.text}</div>
-                                </div>
-                              </div>
-                            )
-                          })}
-                        </div>
+                  <CardContent>
+                    {displayText ? (
+                      <div className="max-h-[70vh] overflow-auto rounded-lg border border-border/60 bg-muted/20 p-6">
+                        <p className="text-sm leading-relaxed whitespace-pre-wrap break-words text-foreground">
+                          {displayText}
+                        </p>
                       </div>
-                    ) : rawTranscript ? (
-                      <pre className="whitespace-pre-wrap break-words text-sm leading-relaxed">{rawTranscript}</pre>
                     ) : (
                       <p className="text-sm text-muted-foreground">No transcript to display.</p>
                     )}
