@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useSession, signOut } from "next-auth/react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -31,6 +31,7 @@ type UserData = {
 export default function AccountPage() {
   const { data: session, status } = useSession()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [loading, setLoading] = useState(true)
   const [userData, setUserData] = useState<UserData | null>(null)
 
@@ -44,6 +45,32 @@ export default function AccountPage() {
       fetchUserData()
     }
   }, [status, router])
+
+  // After a successful checkout redirect, webhooks may take a few seconds to arrive.
+  // Poll briefly so credits/subscription show "immediately" without manual refresh.
+  useEffect(() => {
+    if (status !== "authenticated") return
+
+    const payment = searchParams.get("payment")
+    const checkout = searchParams.get("checkout")
+    const shouldPoll = payment === "success" || checkout === "success"
+    if (!shouldPoll) return
+
+    let attempts = 0
+    const maxAttempts = 10 // ~30s
+    const intervalMs = 3000
+
+    const timer = setInterval(async () => {
+      attempts += 1
+      await fetchUserData()
+      if (attempts >= maxAttempts) {
+        clearInterval(timer)
+      }
+    }, intervalMs)
+
+    return () => clearInterval(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [status, searchParams])
 
   const fetchUserData = async () => {
     try {

@@ -36,6 +36,7 @@ export async function POST(req: NextRequest) {
     const event = JSON.parse(body)
     const eventName = event.meta?.event_name || event.event_name
     const data = event.data || {}
+    const eventId = String(event.meta?.event_id || "")
 
     console.log(`Processing Lemon Squeezy webhook: ${eventName}`)
 
@@ -43,7 +44,8 @@ export async function POST(req: NextRequest) {
     switch (eventName) {
       case "subscription_created":
       case "subscription.created": {
-        await handleSubscriptionCreated(data, event.meta?.event_id)
+        // Create/update subscription record only (NO CREDITS HERE to avoid double-grant).
+        await handleSubscriptionCreated(data)
         break
       }
 
@@ -55,7 +57,8 @@ export async function POST(req: NextRequest) {
 
       case "subscription_payment_success":
       case "subscription.payment_success": {
-        await handlePaymentSuccess(data, event.meta?.event_id)
+        // Grant credits on successful payment (initial + renewals). Must be idempotent.
+        await handlePaymentSuccess(data, eventId)
         break
       }
 
@@ -88,38 +91,25 @@ export async function POST(req: NextRequest) {
 /**
  * Handle new subscription creation
  */
-async function handleSubscriptionCreated(data: any, eventId?: string) {
+async function handleSubscriptionCreated(data: any) {
   const subscriptionId = data.id?.toString()
   const customerId = data.attributes?.customer_id?.toString()
   const orderId = data.attributes?.order_id?.toString()
   const variantId = data.attributes?.variant_id?.toString()
   const variantName = data.attributes?.variant_name
+  const userEmail = (data.attributes?.user_email || data.attributes?.email || "").toString().toLowerCase()
+  const status = (data.attributes?.status || "").toString()
 
-  if (!subscriptionId || !customerId) {
-    console.error("Missing subscription or customer ID")
+  if (!subscriptionId) {
+    console.error("Missing subscription ID")
     return
   }
 
-  // Find user by Lemon Squeezy customer ID (stored in user metadata or separate lookup)
-  // For now, we'll need to store customer_id -> user_id mapping
-  // You may need to adjust this based on how you link customers
-  const user = await prisma.user.findFirst({
-    where: {
-      subscriptions: {
-        some: {
-          lemonsqueezyCustomerId: customerId,
-        },
-      },
-    },
-    include: {
-      subscriptions: true,
-    },
-  })
-
-  if (!user) {
-    console.error(`User not found for customer ID: ${customerId}`)
-    return
-  }
+  // Link subscription to the correct app user.
+  // With hosted checkouts, the most reliable identifier is the email in the webhook payload.
+  const user = userEmail
+    ? await prisma.user.findUnique({ where: { email: userEmail } })
+    : null
 
   const planType = mapLemonSqueezyPlanToPlanType(variantId, variantName)
   if (!planType) {
@@ -127,18 +117,22 @@ async function handleSubscriptionCreated(data: any, eventId?: string) {
     return
   }
 
-  const credits = getCreditsForPlan(planType)
   const currentPeriodEnd = data.attributes?.renews_at
     ? new Date(data.attributes.renews_at)
     : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // Default 30 days
 
+  if (!user) {
+    console.error(`User not found for subscription_created email: ${userEmail || "(missing)"}`)
+    return
+  }
+
   // Create or update subscription
-  const subscription = await prisma.subscription.upsert({
+  await prisma.subscription.upsert({
     where: {
       lemonsqueezySubscriptionId: subscriptionId,
     },
     update: {
-      status: "active",
+      status: normalizeLsStatus(status) || "active",
       plan: planType,
       currentPeriodEnd,
       lemonsqueezyCustomerId: customerId,
@@ -147,7 +141,7 @@ async function handleSubscriptionCreated(data: any, eventId?: string) {
     },
     create: {
       userId: user.id,
-      status: "active",
+      status: normalizeLsStatus(status) || "active",
       plan: planType,
       currentPeriodEnd,
       lemonsqueezySubscriptionId: subscriptionId,
@@ -155,38 +149,6 @@ async function handleSubscriptionCreated(data: any, eventId?: string) {
       lemonsqueezyOrderId: orderId,
     },
   })
-
-  // Add credits with idempotency check
-  const externalId = `subscription_created_${subscriptionId}_${eventId || Date.now()}`
-  const existingLedger = await prisma.creditLedger.findUnique({
-    where: { externalId },
-  })
-
-  if (!existingLedger) {
-    const newBalance = user.creditsBalance + credits
-
-    await prisma.$transaction([
-      prisma.user.update({
-        where: { id: user.id },
-        data: { creditsBalance: newBalance },
-      }),
-      prisma.creditLedger.create({
-        data: {
-          userId: user.id,
-          type: "subscription_credit",
-          amount: credits,
-          balanceAfter: newBalance,
-          description: `Monthly credits for ${planType} plan`,
-          externalId,
-          metadata: {
-            subscriptionId,
-            orderId,
-            eventId,
-          },
-        },
-      }),
-    ])
-  }
 }
 
 /**
@@ -200,17 +162,7 @@ async function handleSubscriptionUpdated(data: any) {
     return
   }
 
-  // Map Lemon Squeezy status to our status
-  let ourStatus: string
-  if (status === "active") {
-    ourStatus = "active"
-  } else if (status === "cancelled" || status === "expired") {
-    ourStatus = "cancelled"
-  } else if (status === "past_due" || status === "unpaid") {
-    ourStatus = "unpaid"
-  } else {
-    ourStatus = "inactive"
-  }
+  const ourStatus = normalizeLsStatus(status) || "inactive"
 
   await prisma.subscription.updateMany({
     where: {
@@ -229,26 +181,19 @@ async function handleSubscriptionUpdated(data: any) {
 async function handlePaymentSuccess(data: any, eventId?: string) {
   const subscriptionId = data.attributes?.subscription_id?.toString() || data.id?.toString()
   const invoiceId = data.attributes?.invoice_id?.toString()
+  const customerId = data.attributes?.customer_id?.toString()
+  const orderId = data.attributes?.order_id?.toString()
+  const variantId = data.attributes?.variant_id?.toString()
+  const variantName = data.attributes?.variant_name
+  const userEmail = (data.attributes?.user_email || data.attributes?.email || "").toString().toLowerCase()
+  const renewsAt = data.attributes?.renews_at ? new Date(data.attributes.renews_at) : null
 
   if (!subscriptionId) {
     return
   }
 
-  const subscription = await prisma.subscription.findUnique({
-    where: {
-      lemonsqueezySubscriptionId: subscriptionId,
-    },
-    include: {
-      user: true,
-    },
-  })
-
-  if (!subscription || subscription.status !== "active") {
-    return
-  }
-
-  const credits = getCreditsForPlan(subscription.plan as PlanType)
-  const externalId = `payment_success_${subscriptionId}_${invoiceId || eventId || Date.now()}`
+  // Idempotency key: invoice_id is the best (stable), fallback to eventId.
+  const externalId = invoiceId ? `ls_invoice_${invoiceId}` : `ls_event_${eventId || subscriptionId}`
 
   // Idempotency check
   const existingLedger = await prisma.creditLedger.findUnique({
@@ -256,25 +201,62 @@ async function handlePaymentSuccess(data: any, eventId?: string) {
   })
 
   if (!existingLedger) {
-    const newBalance = subscription.user.creditsBalance + credits
+    // Ensure we can map this payment to a user.
+    const user = userEmail ? await prisma.user.findUnique({ where: { email: userEmail } }) : null
+    if (!user) {
+      console.error(`User not found for payment_success email: ${userEmail || "(missing)"}`)
+      return
+    }
+
+    // Ensure subscription exists/updated.
+    const inferredPlan = mapLemonSqueezyPlanToPlanType(variantId, variantName)
+    const plan = inferredPlan || "starter"
+
+    await prisma.subscription.upsert({
+      where: { lemonsqueezySubscriptionId: subscriptionId },
+      update: {
+        userId: user.id,
+        status: "active",
+        plan,
+        currentPeriodEnd: renewsAt,
+        lemonsqueezyCustomerId: customerId,
+        lemonsqueezyOrderId: orderId,
+        updatedAt: new Date(),
+      },
+      create: {
+        userId: user.id,
+        status: "active",
+        plan,
+        currentPeriodEnd: renewsAt,
+        lemonsqueezySubscriptionId: subscriptionId,
+        lemonsqueezyCustomerId: customerId,
+        lemonsqueezyOrderId: orderId,
+      },
+    })
+
+    const credits = getCreditsForPlan(plan as PlanType)
+    const newBalance = user.creditsBalance + credits
 
     await prisma.$transaction([
       prisma.user.update({
-        where: { id: subscription.userId },
+        where: { id: user.id },
         data: { creditsBalance: newBalance },
       }),
       prisma.creditLedger.create({
         data: {
-          userId: subscription.userId,
+          userId: user.id,
           type: "subscription_credit",
           amount: credits,
           balanceAfter: newBalance,
-          description: `Monthly credits renewal for ${subscription.plan} plan`,
+          description: `Subscription credits (${plan})`,
           externalId,
           metadata: {
             subscriptionId,
             invoiceId,
             eventId,
+            customerId,
+            orderId,
+            userEmail,
           },
         },
       }),
@@ -322,4 +304,14 @@ async function handleSubscriptionCancelled(data: any) {
       updatedAt: new Date(),
     },
   })
+}
+
+function normalizeLsStatus(status: string | null | undefined): string | null {
+  const s = (status || "").toString().toLowerCase()
+  if (!s) return null
+  if (s === "active") return "active"
+  if (s === "cancelled" || s === "expired") return "cancelled"
+  if (s === "past_due" || s === "unpaid") return "unpaid"
+  if (s === "payment_failed") return "payment_failed"
+  return "inactive"
 }

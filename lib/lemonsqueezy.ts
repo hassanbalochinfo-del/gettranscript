@@ -33,12 +33,19 @@ export function mapLemonSqueezyPlanToPlanType(
   variantId: string | number,
   variantName?: string
 ): PlanType | null {
-  // Map by variant ID (you'll get these from Lemon Squeezy dashboard)
-  const variantIdMap: Record<string, PlanType> = {
-    // Update these with your actual variant IDs
-    // "12345": "starter",
-    // "12346": "pro",
-    // "12347": "plus",
+  // Map by variant ID (preferred). Configure these in env:
+  // - LEMONSQUEEZY_VARIANT_STARTER_ID
+  // - LEMONSQUEEZY_VARIANT_PRO_ID
+  // - LEMONSQUEEZY_VARIANT_PLUS_ID
+  const variantIdMap: Record<string, PlanType> = {}
+  if (process.env.LEMONSQUEEZY_VARIANT_STARTER_ID) {
+    variantIdMap[String(process.env.LEMONSQUEEZY_VARIANT_STARTER_ID)] = "starter"
+  }
+  if (process.env.LEMONSQUEEZY_VARIANT_PRO_ID) {
+    variantIdMap[String(process.env.LEMONSQUEEZY_VARIANT_PRO_ID)] = "pro"
+  }
+  if (process.env.LEMONSQUEEZY_VARIANT_PLUS_ID) {
+    variantIdMap[String(process.env.LEMONSQUEEZY_VARIANT_PLUS_ID)] = "plus"
   }
 
   // Map by variant name (fallback)
