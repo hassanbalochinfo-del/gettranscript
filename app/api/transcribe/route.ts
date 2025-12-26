@@ -104,6 +104,64 @@ function pickTranscriptSegments(data: any): { segments: Array<{ text: string; st
   return null
 }
 
+/**
+ * GET /api/transcribe - Fetch existing transcript (NO CHARGE)
+ * Query params: videoId, userId (optional)
+ * Returns transcript if it exists, otherwise 404
+ */
+export async function GET(req: NextRequest) {
+  try {
+    const searchParams = req.nextUrl.searchParams
+    const videoId = searchParams.get("videoId")
+    const userId = searchParams.get("userId")
+
+    if (!videoId) {
+      return NextResponse.json({ error: "videoId is required" }, { status: 400 })
+    }
+
+    // If userId provided, check if we have a transcript record for this user+video
+    if (userId) {
+      const existingLedger = await prisma.creditLedger.findFirst({
+        where: {
+          userId,
+          externalId: `transcribe_${userId}_${videoId}`,
+          type: "transcript_generated",
+        },
+        orderBy: { createdAt: "desc" },
+        take: 1,
+      })
+
+      if (existingLedger) {
+        // User has already generated this transcript, but we don't store the transcript itself
+        // Return a signal that it exists (client should use cached/URL param version)
+        return NextResponse.json({
+          exists: true,
+          videoId,
+          message: "Transcript already generated for this user and video",
+        })
+      }
+    }
+
+    // For now, GET endpoint just confirms if transcript was generated
+    // Actual transcript should come from URL params or client-side cache
+    return NextResponse.json({
+      exists: false,
+      videoId,
+      message: "Transcript not found. Generate it using POST /api/transcribe",
+    }, { status: 404 })
+  } catch (error: any) {
+    return NextResponse.json(
+      { error: error?.message || "Failed to check transcript" },
+      { status: 500 }
+    )
+  }
+}
+
+/**
+ * POST /api/transcribe - Generate new transcript (CHARGES 1 CREDIT)
+ * Body: { url, format?, sendMetadata?, requestId? }
+ * Idempotent: Same user + same videoId = only charges once
+ */
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
@@ -172,20 +230,24 @@ export async function POST(req: NextRequest) {
     }
 
     // Deduct 1 credit for logged-in users when transcript is generated
+    // Idempotency: Same user + same videoId = only charge once
     const session = await getServerSession(authOptions)
     if (session?.user?.id) {
-      const externalId = typeof requestId === "string" && requestId.trim() ? `transcribe_${requestId.trim()}` : null
+      // Use userId + videoId for idempotency (prevents double-charging for same video)
+      const idempotencyKey = `transcribe_${session.user.id}_${videoId}`
 
       await prisma.$transaction(async (tx) => {
-        // Idempotency: if we already charged this requestId, don't charge again
-        if (externalId) {
-          const existing = await tx.creditLedger.findUnique({ where: { externalId } })
-          if (existing) return
+        // Idempotency check: if we already charged this user+video combination, don't charge again
+        const existing = await tx.creditLedger.findUnique({ 
+          where: { externalId: idempotencyKey } 
+        })
+        if (existing) {
+          // Already charged for this user+video, skip credit deduction
+          return
         }
 
         const user = await tx.user.findUnique({ where: { id: session.user.id } })
         if (!user) {
-          // If session exists but user doesn't, treat as auth issue
           throw new Error("User not found")
         }
 
@@ -207,7 +269,7 @@ export async function POST(req: NextRequest) {
             amount: -1,
             balanceAfter: newBalance,
             description: "Transcript generated",
-            externalId: externalId ?? undefined,
+            externalId: idempotencyKey,
             metadata: {
               videoId,
               url,

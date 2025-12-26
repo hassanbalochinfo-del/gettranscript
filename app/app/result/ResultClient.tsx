@@ -123,6 +123,7 @@ export default function ResultClient() {
     }
   }
 
+  // Load transcript from URL params if available (no API call, no charge)
   useEffect(() => {
     if (transcriptParam) {
       setRawTranscript(decodeURIComponent(transcriptParam))
@@ -131,92 +132,102 @@ export default function ResultClient() {
       return
     }
 
-    if (!url) {
+    // If URL is provided but no transcript param, show message to generate
+    if (url && !transcriptParam) {
+      setError("Click 'Get Transcript' to generate the transcript for this video.")
+      setLoading(false)
+    } else if (!url && !transcriptParam) {
       setError("No URL provided. Please go back and paste a YouTube video link.")
+      setLoading(false)
+    }
+  }, [url, transcriptParam, titleParam])
+
+  // Function to generate transcript (only called when user clicks button)
+  const handleGenerateTranscript = async () => {
+    if (!url) {
+      toast.error("Please enter a YouTube URL")
       return
     }
+
     if (isYouTubeChannelUrl(url)) {
       setError("Please paste a YouTube video link, not a channel link.\n\nTip: open a video from the channel and paste that video URL.")
       return
     }
 
-    const run = async () => {
-      setLoading(true)
-      setError(null)
-      setRawTranscript("")
-      setTitle("")
-      setVideoId("")
-      setLanguage("")
-      setMetadata(null)
-      setTranslatedText(null)
+    setLoading(true)
+    setError(null)
+    setRawTranscript("")
+    setTitle("")
+    setVideoId("")
+    setLanguage("")
+    setMetadata(null)
+    setTranslatedText(null)
 
-      try {
-        const reqId =
-          (globalThis.crypto as any)?.randomUUID?.() ??
-          `${Date.now()}_${Math.random().toString(16).slice(2)}`
+    try {
+      const res = await fetch("/api/transcribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          url,
+          format: "json",
+          sendMetadata: true,
+        }),
+      })
 
-        const res = await fetch("/api/transcribe", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            url,
-            format: "json",
-            sendMetadata: true,
-            requestId: reqId,
-          }),
-        })
-
-        const text = await res.text()
-        if (!text || text.trim().length === 0) {
-          setError("Server returned an empty response. Please try again.")
-          return
-        }
-
-        let data: any
-        try {
-          data = JSON.parse(text)
-        } catch {
-          setError(`Invalid response from server: ${text.length > 200 ? text.slice(0, 200) + "…" : text}`)
-          return
-        }
-
-        if (!res.ok) {
-          const baseMsg = data?.error || "Failed to fetch transcript."
-          const code = data?.code ? ` (${data.code})` : ""
-          const detail = data?.detail?.detail || data?.detail?.message || data?.detail?.raw || null
-          const detailMsg = detail ? `\n\nDetails: ${String(detail).slice(0, 300)}` : ""
-          setError(`${baseMsg}${code}${detailMsg}`)
-          return
-        }
-
-        setVideoId(String(data.videoId || ""))
-        setLanguage(String(data.language || ""))
-        setMetadata((data.metadata as TranscriptMetadata) ?? null)
-
-        // Always expect plain text transcript (no segments, no timestamps)
-        if (typeof data.transcript === "string") {
-          setRawTranscript(data.transcript)
-        } else {
-          setError("Unexpected transcript format returned by server.")
-          return
-        }
-
-        const titleFromMeta = (data.metadata?.title as string | undefined) ?? null
-        if (titleFromMeta) setTitle(titleFromMeta)
-        else {
-          const extracted = extractYouTubeVideoId(url)
-          setTitle(extracted ? `Transcript • ${extracted}` : "Transcript")
-        }
-      } catch (e: any) {
-        setError(e?.message || "Something went wrong.")
-      } finally {
-        setLoading(false)
+      const text = await res.text()
+      if (!text || text.trim().length === 0) {
+        setError("Server returned an empty response. Please try again.")
+        return
       }
-    }
 
-    run()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [url, transcriptParam, titleParam])
+      let data: any
+      try {
+        data = JSON.parse(text)
+      } catch {
+        setError(`Invalid response from server: ${text.length > 200 ? text.slice(0, 200) + "…" : text}`)
+        return
+      }
+
+      if (!res.ok) {
+        const baseMsg = data?.error || "Failed to fetch transcript."
+        const code = data?.code ? ` (${data.code})` : ""
+        const detail = data?.detail?.detail || data?.detail?.message || data?.detail?.raw || null
+        const detailMsg = detail ? `\n\nDetails: ${String(detail).slice(0, 300)}` : ""
+        setError(`${baseMsg}${code}${detailMsg}`)
+        return
+      }
+
+      setVideoId(String(data.videoId || ""))
+      setLanguage(String(data.language || ""))
+      setMetadata((data.metadata as TranscriptMetadata) ?? null)
+
+      // Always expect plain text transcript (no segments, no timestamps)
+      if (typeof data.transcript === "string") {
+        setRawTranscript(data.transcript)
+        // Update URL with transcript param so refresh doesn't re-charge
+        const newUrl = new URL(window.location.href)
+        newUrl.searchParams.set("transcript", encodeURIComponent(data.transcript))
+        if (data.metadata?.title) {
+          newUrl.searchParams.set("title", encodeURIComponent(data.metadata.title))
+        }
+        window.history.replaceState({}, "", newUrl.toString())
+      } else {
+        setError("Unexpected transcript format returned by server.")
+        return
+      }
+
+      const titleFromMeta = (data.metadata?.title as string | undefined) ?? null
+      if (titleFromMeta) setTitle(titleFromMeta)
+      else {
+        const extracted = extractYouTubeVideoId(url)
+        setTitle(extracted ? `Transcript • ${extracted}` : "Transcript")
+      }
+    } catch (e: any) {
+      setError(e?.message || "Something went wrong.")
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleCopy = async () => {
     if (!displayText) return
@@ -379,7 +390,9 @@ export default function ResultClient() {
           {error ? (
             <Card className="border-destructive/40 bg-destructive/5">
               <CardHeader className="pb-3">
-                <CardTitle className="text-base text-destructive">Unable to get transcript</CardTitle>
+                <CardTitle className="text-base text-destructive">
+                  {url && !transcriptParam ? "Generate Transcript" : "Unable to get transcript"}
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="whitespace-pre-wrap text-sm text-destructive/80">{error}</p>
@@ -387,9 +400,27 @@ export default function ResultClient() {
                   <Button variant="outline" onClick={() => router.push("/")}>
                     Try another video
                   </Button>
-                  {url ? (
-                    <Button variant="outline" onClick={() => window.location.reload()}>
-                      Retry
+                  {url && !transcriptParam ? (
+                    <Button onClick={handleGenerateTranscript} disabled={loading}>
+                      {loading ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        "Get Transcript"
+                      )}
+                    </Button>
+                  ) : url ? (
+                    <Button variant="outline" onClick={handleGenerateTranscript} disabled={loading}>
+                      {loading ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Generating...
+                        </>
+                      ) : (
+                        "Retry"
+                      )}
                     </Button>
                   ) : null}
                 </div>
