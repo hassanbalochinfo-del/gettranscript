@@ -12,6 +12,7 @@ import { Footer } from "@/components/footer"
 import { toast } from "sonner"
 import { StructuredData } from "@/components/StructuredData"
 import { UI_COPY, PLAN_PRICES, PLAN_CREDITS } from "@/lib/constants"
+import { CheckoutButton } from "@/components/checkout-button"
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://gettranscript.com"
 
@@ -21,7 +22,7 @@ const plans = [
     price: PLAN_PRICES.starter,
     credits: PLAN_CREDITS.starter,
     features: UI_COPY.starterFeatures,
-    checkoutUrl: process.env.NEXT_PUBLIC_LS_STARTER_URL || "/pricing",
+    plan: "starter",
     highlighted: false,
   },
   {
@@ -29,7 +30,7 @@ const plans = [
     price: PLAN_PRICES.pro,
     credits: PLAN_CREDITS.pro,
     features: UI_COPY.proFeatures,
-    checkoutUrl: process.env.NEXT_PUBLIC_LS_PRO_URL || "/pricing",
+    plan: "pro",
     highlighted: true,
   },
   {
@@ -37,7 +38,7 @@ const plans = [
     price: PLAN_PRICES.plus,
     credits: PLAN_CREDITS.plus,
     features: UI_COPY.plusFeatures,
-    checkoutUrl: process.env.NEXT_PUBLIC_LS_PLUS_URL || "/pricing",
+    plan: "plus",
     highlighted: false,
   },
 ]
@@ -326,17 +327,17 @@ export default function HomePage() {
                         </li>
                       ))}
                     </ul>
-                    <Button
+                    <CheckoutButton
+                      plan={plan.plan as any}
                       className="w-full"
                       variant={plan.highlighted ? "default" : "outline"}
                       size="lg"
-                      asChild
                     >
-                      <Link href={plan.checkoutUrl}>
+                      <span className="inline-flex items-center">
                         {UI_COPY.getStarted}
                         <ArrowRight className="ml-2 h-4 w-4" />
-                      </Link>
-                    </Button>
+                      </span>
+                    </CheckoutButton>
                   </CardContent>
                 </Card>
               ))}

@@ -1,9 +1,9 @@
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Check } from "lucide-react"
 import { UI_COPY, PLAN_PRICES, PLAN_CREDITS } from "@/lib/constants"
+import { CheckoutButton } from "@/components/checkout-button"
 
 const plans = [
   {
@@ -11,7 +11,7 @@ const plans = [
     price: PLAN_PRICES.starter,
     credits: PLAN_CREDITS.starter,
     features: UI_COPY.starterFeatures,
-    checkoutUrl: process.env.NEXT_PUBLIC_LS_STARTER_URL || "#",
+    plan: "starter",
     highlighted: false,
   },
   {
@@ -19,7 +19,7 @@ const plans = [
     price: PLAN_PRICES.pro,
     credits: PLAN_CREDITS.pro,
     features: UI_COPY.proFeatures,
-    checkoutUrl: process.env.NEXT_PUBLIC_LS_PRO_URL || "#",
+    plan: "pro",
     highlighted: true,
   },
   {
@@ -27,7 +27,7 @@ const plans = [
     price: PLAN_PRICES.plus,
     credits: PLAN_CREDITS.plus,
     features: UI_COPY.plusFeatures,
-    checkoutUrl: process.env.NEXT_PUBLIC_LS_PLUS_URL || "#",
+    plan: "plus",
     highlighted: false,
   },
 ]
@@ -84,16 +84,16 @@ export default function PricingPage() {
                       </li>
                     ))}
                   </ul>
-                  <Button
-                    className="mt-8 w-full"
-                    variant={plan.highlighted ? "default" : "outline"}
-                    size="lg"
-                    asChild
-                  >
-                    <a href={plan.checkoutUrl} target="_blank" rel="noopener noreferrer">
+                  <div className="mt-8">
+                    <CheckoutButton
+                      plan={plan.plan as any}
+                      variant={plan.highlighted ? "default" : "outline"}
+                      size="lg"
+                      className="w-full"
+                    >
                       {UI_COPY.getStarted}
-                    </a>
-                  </Button>
+                    </CheckoutButton>
+                  </div>
                 </CardContent>
               </Card>
             ))}
