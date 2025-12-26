@@ -24,6 +24,10 @@ function safeJsonParse(text: string) {
 }
 
 export async function POST(req: Request) {
+  // NOTE: This endpoint does NOT deduct credits.
+  // Translation is completely free - no database access, no credit checks, no deductions.
+  // Credits are ONLY deducted in /api/transcribe when generating the transcript.
+  
   const apiKey = process.env.OPENAI_API_KEY
   if (!apiKey) {
     return NextResponse.json(
