@@ -123,16 +123,67 @@ export default function ResultClient() {
     }
   }
 
-  // Load transcript from URL params if available (no API call, no charge)
+  // Load transcript from cache (localStorage) or URL params (no API call, no charge)
   useEffect(() => {
+    // First priority: URL params (if transcript was just generated)
     if (transcriptParam) {
-      setRawTranscript(decodeURIComponent(transcriptParam))
+      const transcript = decodeURIComponent(transcriptParam)
+      setRawTranscript(transcript)
       setTitle(titleParam ? decodeURIComponent(titleParam) : "Transcript")
+      
+      // Also cache it in localStorage for future visits
+      if (url) {
+        const videoId = extractYouTubeVideoId(url)
+        if (videoId) {
+          const cacheKey = `transcript_${videoId}`
+          localStorage.setItem(cacheKey, JSON.stringify({
+            transcript,
+            title: titleParam ? decodeURIComponent(titleParam) : null,
+            url,
+            timestamp: Date.now(),
+          }))
+        }
+      }
+      
       setLoading(false)
       return
     }
 
-    // If URL is provided but no transcript param, show message to generate
+    // Second priority: Check localStorage cache
+    if (url) {
+      const videoId = extractYouTubeVideoId(url)
+      if (videoId) {
+        const cacheKey = `transcript_${videoId}`
+        const cached = localStorage.getItem(cacheKey)
+        
+        if (cached) {
+          try {
+            const data = JSON.parse(cached)
+            // Cache is valid for 24 hours
+            const cacheAge = Date.now() - (data.timestamp || 0)
+            const maxAge = 24 * 60 * 60 * 1000 // 24 hours
+            
+            if (cacheAge < maxAge && data.transcript) {
+              setRawTranscript(data.transcript)
+              if (data.title) setTitle(data.title)
+              if (data.videoId) setVideoId(data.videoId)
+              if (data.language) setLanguage(data.language)
+              if (data.metadata) setMetadata(data.metadata)
+              setLoading(false)
+              return
+            } else {
+              // Cache expired, remove it
+              localStorage.removeItem(cacheKey)
+            }
+          } catch {
+            // Invalid cache, remove it
+            localStorage.removeItem(cacheKey)
+          }
+        }
+      }
+    }
+
+    // If URL is provided but no cached transcript, show message to generate
     if (url && !transcriptParam) {
       setError("Click 'Get Transcript' to generate the transcript for this video.")
       setLoading(false)
