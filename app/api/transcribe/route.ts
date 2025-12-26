@@ -243,36 +243,114 @@ export async function POST(req: NextRequest) {
     let polishedTranscript: string | null = null
     let isPolished = false
 
-    try {
-      // Use internal API call or direct OpenAI call
-      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL 
-        ? `https://${process.env.VERCEL_URL}` 
-        : "http://localhost:3000"
-      
-      const polishResponse = await fetch(`${baseUrl}/api/ai/polish`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          transcript: includeTimestamp ? null : picked.segments.map((s) => s.text).join(" "),
-          segments: includeTimestamp ? picked.segments : null,
-        }),
-      })
+    const openaiKey = process.env.OPENAI_API_KEY
+    if (openaiKey) {
+      try {
+        // Polish segments if timestamps are included
+        if (includeTimestamp && picked.segments.length > 0) {
+          const texts = picked.segments.map((s) => s.text.trim()).filter(Boolean)
+          
+          if (texts.length > 0) {
+            const prompt = `You are a professional transcript editor. Improve the following transcript segments for readability:
+- Fix grammar and spelling errors
+- Add proper punctuation
+- Improve sentence structure and flow
+- Maintain the original meaning and tone
+- Keep the text natural and conversational
+- Do not change technical terms or proper nouns unless they are misspelled
 
-      if (polishResponse.ok) {
-        const polishData = await polishResponse.json()
-        if (polishData.polished) {
-          isPolished = true
-          if (polishData.segments) {
-            polishedSegments = polishData.segments
+Return ONLY a valid JSON array of strings, same length and order as the input. Do not add commentary or extra fields.
+
+Input segments:
+${JSON.stringify(texts)}`
+
+            const polishResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${openaiKey}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                model: "gpt-4o-mini",
+                temperature: 0.3,
+                messages: [
+                  {
+                    role: "system",
+                    content: "You are a professional transcript editor. Return only valid JSON arrays.",
+                  },
+                  { role: "user", content: prompt },
+                ],
+              }),
+            })
+
+            if (polishResponse.ok) {
+              const polishData = await polishResponse.json()
+              const content = polishData?.choices?.[0]?.message?.content
+              
+              if (content) {
+                try {
+                  const polishedTexts = JSON.parse(content)
+                  if (Array.isArray(polishedTexts) && polishedTexts.length === texts.length) {
+                    polishedSegments = picked.segments.map((seg, idx) => ({
+                      ...seg,
+                      text: String(polishedTexts[idx] ?? seg.text).trim(),
+                    }))
+                    isPolished = true
+                  }
+                } catch {}
+              }
+            }
           }
-          if (polishData.transcript) {
-            polishedTranscript = polishData.transcript
+        } else {
+          // Polish plain text
+          const plainText = picked.segments.map((s) => s.text).join(" ")
+          if (plainText.trim()) {
+            const prompt = `You are a professional transcript editor. Improve the following transcript for readability:
+- Fix grammar and spelling errors
+- Add proper punctuation
+- Improve sentence structure and flow
+- Maintain the original meaning and tone
+- Keep the text natural and conversational
+- Do not change technical terms or proper nouns unless they are misspelled
+
+Return ONLY the polished transcript text, nothing else.
+
+Transcript:
+${plainText}`
+
+            const polishResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${openaiKey}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                model: "gpt-4o-mini",
+                temperature: 0.3,
+                messages: [
+                  {
+                    role: "system",
+                    content: "You are a professional transcript editor. Return only the polished text.",
+                  },
+                  { role: "user", content: prompt },
+                ],
+              }),
+            })
+
+            if (polishResponse.ok) {
+              const polishData = await polishResponse.json()
+              const polished = polishData?.choices?.[0]?.message?.content?.trim()
+              if (polished) {
+                polishedTranscript = polished
+                isPolished = true
+              }
+            }
           }
         }
+      } catch (error) {
+        // If polishing fails, continue with original transcript
+        // Silently fail - polishing is enhancement, not required
       }
-    } catch (error) {
-      // If polishing fails, continue with original transcript
-      // Silently fail - polishing is enhancement, not required
     }
 
     // Format response based on requested format
