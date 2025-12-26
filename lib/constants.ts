@@ -53,7 +53,7 @@ export const UI_COPY = {
   },
   faqRefunds: {
     q: "Do you offer refunds?",
-    a: "We offer refunds within 30 days of purchase. Contact us at transcriptget@gmail.com for assistance."
+    a: "We offer refunds within 24 hours of purchase. Contact us at transcriptget@gmail.com for assistance."
   },
   faqCancelAnytime: {
     q: "Can I cancel anytime?",
