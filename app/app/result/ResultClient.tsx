@@ -494,10 +494,10 @@ export default function ResultClient() {
 
                     <Separator />
 
-                    {segments.length > 0 ? (
+                    {displaySegments.length > 0 ? (
                       <div className="max-h-[70vh] overflow-auto rounded-lg border border-border/60">
                         <div className="p-4 space-y-2">
-                          {segments.map((s, idx) => {
+                          {displaySegments.map((s, idx) => {
                             const hasTs = includeTimestamps && typeof s.start === "number"
                             return (
                               <div
