@@ -123,16 +123,16 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Call official TranscriptAPI endpoint
-    // Docs: GET https://api.transcriptapi.com/api/v2/video-transcript?platform=youtube&video_id=VIDEO_ID
-    // Auth: x-api-key: YOUR_API_KEY
-    const transcriptApiUrl = `https://api.transcriptapi.com/api/v2/video-transcript?platform=youtube&video_id=${encodeURIComponent(
-      videoId
-    )}`
+    // Call official TranscriptAPI endpoint (YouTube)
+    // Endpoint exists: GET https://transcriptapi.com/api/v2/youtube/transcript?video_url=VIDEO_URL
+    // Auth: Authorization: Bearer YOUR_API_KEY
+    const transcriptApiUrl = `https://transcriptapi.com/api/v2/youtube/transcript?video_url=${encodeURIComponent(url)}`
 
     const response = await fetch(transcriptApiUrl, {
       method: "GET",
       headers: {
+        Authorization: `Bearer ${apiKey}`,
+        // Some docs mention x-api-key; sending both is safe.
         "x-api-key": apiKey,
       },
       // avoid caching in serverless
