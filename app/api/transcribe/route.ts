@@ -176,6 +176,27 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid YouTube URL" }, { status: 400 })
     }
 
+    // Check idempotency FIRST (before any external API calls)
+    // Same user + same videoId = only charge once
+    const session = await getServerSession(authOptions)
+    let alreadyCharged = false
+    
+    if (session?.user?.id) {
+      const idempotencyKey = `transcribe_${session.user.id}_${videoId}`
+      
+      // Check if we already charged for this user+video combination
+      const existing = await prisma.creditLedger.findUnique({ 
+        where: { externalId: idempotencyKey } 
+      })
+      
+      if (existing) {
+        // Already charged - return early with cached/previous transcript
+        // Note: We don't store transcripts in DB, so we still need to fetch from TranscriptAPI
+        // But we won't charge credits again
+        alreadyCharged = true
+      }
+    }
+
     const apiKey = process.env.TRANSCRIPTAPI_KEY
     if (!apiKey) {
       return NextResponse.json(
@@ -229,20 +250,17 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Deduct 1 credit for logged-in users when transcript is generated
-    // Idempotency: Same user + same videoId = only charge once
-    const session = await getServerSession(authOptions)
-    if (session?.user?.id) {
-      // Use userId + videoId for idempotency (prevents double-charging for same video)
+    // Deduct 1 credit ONLY if not already charged (idempotency check happened above)
+    if (session?.user?.id && !alreadyCharged) {
       const idempotencyKey = `transcribe_${session.user.id}_${videoId}`
-
+      
       await prisma.$transaction(async (tx) => {
-        // Idempotency check: if we already charged this user+video combination, don't charge again
-        const existing = await tx.creditLedger.findUnique({ 
+        // Double-check idempotency inside transaction (race condition protection)
+        const doubleCheck = await tx.creditLedger.findUnique({ 
           where: { externalId: idempotencyKey } 
         })
-        if (existing) {
-          // Already charged for this user+video, skip credit deduction
+        if (doubleCheck) {
+          // Another request already charged, skip
           return
         }
 
