@@ -37,8 +37,8 @@ export async function POST(req: NextRequest) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    // Create user with 5 free signup credits
-    const SIGNUP_BONUS_CREDITS = 5
+    // Create user with 100 free signup credits
+    const SIGNUP_BONUS_CREDITS = 100
     const signupExternalId = `signup_bonus_${email}_${Date.now()}`
 
     const user = await prisma.$transaction(async (tx) => {
