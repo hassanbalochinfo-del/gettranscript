@@ -10,7 +10,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
 import { toast } from "sonner"
-import { ArrowLeft, Check, Copy, Download, Loader2 } from "lucide-react"
+import { ArrowLeft, Check, Copy, Download, Loader2, Languages, Sparkles } from "lucide-react"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 type TranscriptSegment = {
   text: string
@@ -95,18 +96,61 @@ export default function ResultClient() {
   const [copied, setCopied] = useState(false)
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
   const segmentRefs = useRef<Array<HTMLDivElement | null>>([])
+  const [isPolished, setIsPolished] = useState(false)
+  const [translatedSegments, setTranslatedSegments] = useState<TranscriptSegment[] | null>(null)
+  const [translating, setTranslating] = useState(false)
+  const [selectedLanguage, setSelectedLanguage] = useState<string>("")
+
+  const displaySegments = useMemo(() => {
+    return translatedSegments || segments
+  }, [translatedSegments, segments])
 
   const displayText = useMemo(() => {
-    if (segments.length > 0) {
+    if (displaySegments.length > 0) {
       if (includeTimestamps) {
-        return segments
+        return displaySegments
           .map((s) => (typeof s.start === "number" ? `[${formatTimestamp(s.start)}] ${s.text}` : s.text))
           .join("\n")
       }
-      return segments.map((s) => s.text).join(" ")
+      return displaySegments.map((s) => s.text).join(" ")
     }
     return rawTranscript || ""
-  }, [segments, includeTimestamps, rawTranscript])
+  }, [displaySegments, includeTimestamps, rawTranscript])
+
+  const handleTranslate = async (targetLang: string) => {
+    if (!segments.length || translating) return
+
+    setTranslating(true)
+    setSelectedLanguage(targetLang)
+
+    try {
+      const res = await fetch("/api/translate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          segments: segments,
+          targetLang: targetLang,
+          sourceLang: language || undefined,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok || !data.ok) {
+        throw new Error(data.error || "Translation failed")
+      }
+
+      if (data.segments && Array.isArray(data.segments)) {
+        setTranslatedSegments(data.segments)
+        toast.success(`Translated to ${targetLang.toUpperCase()}`)
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Translation failed")
+      setSelectedLanguage("")
+    } finally {
+      setTranslating(false)
+    }
+  }
 
   useEffect(() => {
     if (transcriptParam) {
@@ -178,6 +222,7 @@ export default function ResultClient() {
         setVideoId(String(data.videoId || ""))
         setLanguage(String(data.language || ""))
         setMetadata((data.metadata as TranscriptMetadata) ?? null)
+        setIsPolished(data.polished === true)
 
         const tr = data.transcript
         if (Array.isArray(tr)) {
@@ -249,7 +294,7 @@ export default function ResultClient() {
           metadata: {
             title: metadata?.title || title,
             videoId,
-            language,
+            language: selectedLanguage || language,
           },
         }),
       })
@@ -312,7 +357,15 @@ export default function ResultClient() {
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to home
               </Link>
-              <h1 className="mt-3 text-2xl font-semibold tracking-tight">{metadata?.title || title || "Transcript"}</h1>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h1 className="text-2xl font-semibold tracking-tight">{metadata?.title || title || "Transcript"}</h1>
+                {isPolished && (
+                  <div className="inline-flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+                    <Sparkles className="h-3 w-3" />
+                    AI Polished
+                  </div>
+                )}
+              </div>
               {url ? (
                 <p className="mt-1 text-sm text-muted-foreground">
                   Source:{" "}
@@ -324,6 +377,45 @@ export default function ResultClient() {
             </div>
 
             <div className="flex items-center gap-2 flex-wrap">
+              {segments.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <Select
+                    value={selectedLanguage}
+                    onValueChange={handleTranslate}
+                    disabled={translating}
+                  >
+                    <SelectTrigger className="w-[140px]">
+                      <SelectValue placeholder="Translate" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="es">Spanish</SelectItem>
+                      <SelectItem value="fr">French</SelectItem>
+                      <SelectItem value="de">German</SelectItem>
+                      <SelectItem value="it">Italian</SelectItem>
+                      <SelectItem value="pt">Portuguese</SelectItem>
+                      <SelectItem value="ru">Russian</SelectItem>
+                      <SelectItem value="ja">Japanese</SelectItem>
+                      <SelectItem value="ko">Korean</SelectItem>
+                      <SelectItem value="zh">Chinese</SelectItem>
+                      <SelectItem value="ar">Arabic</SelectItem>
+                      <SelectItem value="hi">Hindi</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {translating && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+                  {translatedSegments && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setTranslatedSegments(null)
+                        setSelectedLanguage("")
+                      }}
+                    >
+                      Show Original
+                    </Button>
+                  )}
+                </div>
+              )}
               <Button variant="outline" size="sm" onClick={handleCopy} disabled={!displayText}>
                 {copied ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
                 {copied ? "Copied" : "Copy"}
@@ -332,7 +424,7 @@ export default function ResultClient() {
                 <Download className="h-4 w-4 mr-2" />
                 Download TXT
               </Button>
-              <Button variant="outline" size="sm" onClick={() => handleDownload("json")} disabled={!displayText || segments.length === 0}>
+              <Button variant="outline" size="sm" onClick={() => handleDownload("json")} disabled={!displayText || displaySegments.length === 0}>
                 <Download className="h-4 w-4 mr-2" />
                 Download JSON
               </Button>

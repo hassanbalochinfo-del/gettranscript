@@ -238,30 +238,70 @@ export async function POST(req: NextRequest) {
           }
         : undefined
 
+    // Automatically polish the transcript using AI
+    let polishedSegments = picked.segments
+    let polishedTranscript: string | null = null
+    let isPolished = false
+
+    try {
+      // Use internal API call or direct OpenAI call
+      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || process.env.VERCEL_URL 
+        ? `https://${process.env.VERCEL_URL}` 
+        : "http://localhost:3000"
+      
+      const polishResponse = await fetch(`${baseUrl}/api/ai/polish`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          transcript: includeTimestamp ? null : picked.segments.map((s) => s.text).join(" "),
+          segments: includeTimestamp ? picked.segments : null,
+        }),
+      })
+
+      if (polishResponse.ok) {
+        const polishData = await polishResponse.json()
+        if (polishData.polished) {
+          isPolished = true
+          if (polishData.segments) {
+            polishedSegments = polishData.segments
+          }
+          if (polishData.transcript) {
+            polishedTranscript = polishData.transcript
+          }
+        }
+      }
+    } catch (error) {
+      // If polishing fails, continue with original transcript
+      // Silently fail - polishing is enhancement, not required
+    }
+
     // Format response based on requested format
     if (format === "json" && includeTimestamp) {
       return NextResponse.json({
-        transcript: picked.segments,
+        transcript: polishedSegments,
         videoId,
         language,
         metadata,
+        polished: isPolished,
       })
     } else if (format === "json" && !includeTimestamp) {
       // Return plain text when timestamps not requested
-      const plainText = picked.segments.map((s) => s.text).join(" ")
+      const plainText = polishedTranscript || polishedSegments.map((s) => s.text).join(" ")
       return NextResponse.json({
         transcript: plainText,
         videoId,
         language,
         metadata,
+        polished: isPolished,
       })
     } else {
       // Return as string
       return NextResponse.json({
-        transcript: picked.segments.map((s) => s.text).join(" "),
+        transcript: polishedTranscript || polishedSegments.map((s) => s.text).join(" "),
         videoId,
         language,
         metadata,
+        polished: isPolished,
       })
     }
   } catch (error: any) {
