@@ -8,7 +8,7 @@ import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "sonner"
-import { ArrowLeft, Check, Copy, Download, Loader2, Languages, Sparkles } from "lucide-react"
+import { ArrowLeft, Check, Copy, Download, Loader2, Languages } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 type TranscriptMetadata = {
