@@ -205,6 +205,37 @@ export default function ResultClient() {
       return
     }
 
+    // Check cache first - if transcript exists, use it (no API call, no charge)
+    const videoId = extractYouTubeVideoId(url)
+    if (videoId) {
+      const cacheKey = `transcript_${videoId}`
+      const cached = localStorage.getItem(cacheKey)
+      
+      if (cached) {
+        try {
+          const data = JSON.parse(cached)
+          const cacheAge = Date.now() - (data.timestamp || 0)
+          const maxAge = 24 * 60 * 60 * 1000 // 24 hours
+          
+          if (cacheAge < maxAge && data.transcript) {
+            // Use cached transcript (no API call, no charge)
+            setRawTranscript(data.transcript)
+            if (data.title) setTitle(data.title)
+            if (data.videoId) setVideoId(data.videoId)
+            if (data.language) setLanguage(data.language)
+            if (data.metadata) setMetadata(data.metadata)
+            toast.success("Loaded cached transcript")
+            return
+          } else {
+            // Cache expired, remove it
+            localStorage.removeItem(cacheKey)
+          }
+        } catch {
+          localStorage.removeItem(cacheKey)
+        }
+      }
+    }
+
     setLoading(true)
     setError(null)
     setRawTranscript("")
@@ -255,7 +286,23 @@ export default function ResultClient() {
       // Always expect plain text transcript (no segments, no timestamps)
       if (typeof data.transcript === "string") {
         setRawTranscript(data.transcript)
-        // Update URL with transcript param so refresh doesn't re-charge
+        
+        // Cache transcript in localStorage for future visits (no API call on refresh)
+        const videoId = extractYouTubeVideoId(url)
+        if (videoId) {
+          const cacheKey = `transcript_${videoId}`
+          localStorage.setItem(cacheKey, JSON.stringify({
+            transcript: data.transcript,
+            title: data.metadata?.title || null,
+            videoId: String(data.videoId || videoId),
+            language: String(data.language || ""),
+            metadata: data.metadata || null,
+            url,
+            timestamp: Date.now(),
+          }))
+        }
+        
+        // Update URL with transcript param (optional, for sharing)
         const newUrl = new URL(window.location.href)
         newUrl.searchParams.set("transcript", encodeURIComponent(data.transcript))
         if (data.metadata?.title) {
