@@ -68,7 +68,7 @@ export const PLAN_CREDITS = {
 } as const
 
 export const PLAN_PRICES = {
-  starter: 7,
+  starter: 5,
   pro: 10,
   plus: 15
 } as const

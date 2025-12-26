@@ -26,6 +26,9 @@ export function Navbar() {
           <Link href="/features" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
             Features
           </Link>
+          <Link href="/pricing" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
+            Pricing
+          </Link>
           <Link href="/blog" className="text-sm text-muted-foreground transition-colors hover:text-foreground">
             Blog
           </Link>
@@ -64,6 +67,9 @@ export function Navbar() {
           <div className="flex flex-col gap-3">
             <Link href="/features" className="text-sm text-muted-foreground" onClick={() => setMobileMenuOpen(false)}>
               Features
+            </Link>
+            <Link href="/pricing" className="text-sm text-muted-foreground" onClick={() => setMobileMenuOpen(false)}>
+              Pricing
             </Link>
             <Link href="/blog" className="text-sm text-muted-foreground" onClick={() => setMobileMenuOpen(false)}>
               Blog
