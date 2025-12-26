@@ -30,6 +30,77 @@ function extractYouTubeVideoId(url: string): string | null {
   }
 }
 
+function hhmmssToSeconds(input: string | undefined | null): number | undefined {
+  if (!input) return undefined
+  const s = input.trim()
+  // Supports HH:MM:SS, MM:SS, SS
+  const parts = s.split(":").map((p) => p.trim())
+  if (parts.some((p) => p.length === 0 || Number.isNaN(Number(p)))) return undefined
+  const nums = parts.map((p) => Number(p))
+  if (nums.length === 3) return nums[0] * 3600 + nums[1] * 60 + nums[2]
+  if (nums.length === 2) return nums[0] * 60 + nums[1]
+  if (nums.length === 1) return nums[0]
+  return undefined
+}
+
+function pickTranscriptSegments(data: any): { segments: Array<{ text: string; start?: number; duration?: number }>; language?: string } | null {
+  // Possible shapes:
+  // - { transcript: [{ start/end/text }] }
+  // - { transcripts: { en: { custom: [{ start/end/text }] } } }
+  // - nested under data.*
+  const root = data?.data ?? data
+
+  // 1) direct array
+  const direct = root?.transcript
+  if (Array.isArray(direct)) {
+    const segments = direct
+      .map((it: any) => {
+        const text = String(it?.text ?? it?.transcript ?? "").trim()
+        if (!text) return null
+        const start = typeof it?.start === "number" ? it.start : hhmmssToSeconds(it?.start)
+        const end = typeof it?.end === "number" ? it.end : hhmmssToSeconds(it?.end)
+        const duration = typeof it?.duration === "number" ? it.duration : typeof start === "number" && typeof end === "number" ? Math.max(0, end - start) : undefined
+        return { text, start, duration }
+      })
+      .filter(Boolean) as Array<{ text: string; start?: number; duration?: number }>
+    return { segments }
+  }
+
+  // 2) transcripts map by language
+  const transcripts = root?.transcripts
+  if (transcripts && typeof transcripts === "object") {
+    const languagePreference = typeof root?.language === "string" ? root.language : "en"
+    const langKey =
+      (languagePreference && transcripts[languagePreference] ? languagePreference : null) ??
+      (transcripts.en ? "en" : null) ??
+      (Object.keys(transcripts)[0] ?? null)
+
+    if (!langKey) return null
+    const langObj = transcripts[langKey]
+    const arr =
+      langObj?.custom ??
+      langObj?.default ??
+      langObj?.segments ??
+      langObj?.transcript ??
+      (Array.isArray(langObj) ? langObj : null)
+
+    if (!Array.isArray(arr)) return null
+    const segments = arr
+      .map((it: any) => {
+        const text = String(it?.text ?? it?.transcript ?? "").trim()
+        if (!text) return null
+        const start = typeof it?.start === "number" ? it.start : hhmmssToSeconds(it?.start)
+        const end = typeof it?.end === "number" ? it.end : hhmmssToSeconds(it?.end)
+        const duration = typeof it?.duration === "number" ? it.duration : typeof start === "number" && typeof end === "number" ? Math.max(0, end - start) : undefined
+        return { text, start, duration }
+      })
+      .filter(Boolean) as Array<{ text: string; start?: number; duration?: number }>
+    return { segments, language: langKey }
+  }
+
+  return null
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
@@ -52,19 +123,20 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Call TranscriptAPI.com via RapidAPI
-    const transcriptApiUrl = "https://transcriptapi.p.rapidapi.com/api/v1/transcript"
-    
+    // Call official TranscriptAPI endpoint
+    // Docs: GET https://api.transcriptapi.com/api/v2/video-transcript?platform=youtube&video_id=VIDEO_ID
+    // Auth: x-api-key: YOUR_API_KEY
+    const transcriptApiUrl = `https://api.transcriptapi.com/api/v2/video-transcript?platform=youtube&video_id=${encodeURIComponent(
+      videoId
+    )}`
+
     const response = await fetch(transcriptApiUrl, {
-      method: "POST",
+      method: "GET",
       headers: {
-        "X-RapidAPI-Key": apiKey,
-        "X-RapidAPI-Host": "transcriptapi.p.rapidapi.com",
-        "Content-Type": "application/json",
+        "x-api-key": apiKey,
       },
-      body: JSON.stringify({
-        video_url: url,
-      }),
+      // avoid caching in serverless
+      cache: "no-store",
     })
 
     if (!response.ok) {
@@ -88,65 +160,56 @@ export async function POST(req: NextRequest) {
 
     const data = await response.json()
 
-    // Extract transcript data
-    let transcript: any = null
-    let metadata: any = null
-    let language = ""
-
-    if (data.transcript) {
-      // Handle different response formats
-      if (Array.isArray(data.transcript)) {
-        transcript = data.transcript.map((item: any) => ({
-          text: item.text || item.transcript || "",
-          start: typeof item.start === "number" ? item.start : item.start_time || item.time || undefined,
-          duration: typeof item.duration === "number" ? item.duration : item.duration_ms ? item.duration_ms / 1000 : undefined,
-        }))
-      } else if (typeof data.transcript === "string") {
-        transcript = data.transcript
-      } else if (data.transcript.text) {
-        transcript = data.transcript.text
-      }
+    const picked = pickTranscriptSegments(data)
+    if (!picked || !picked.segments || picked.segments.length === 0) {
+      return NextResponse.json(
+        { error: "No transcript found for this video.", code: "NO_TRANSCRIPT", detail: data },
+        { status: 404 }
+      )
     }
 
-    if (sendMetadata && data.metadata) {
-      metadata = {
-        title: data.metadata.title || data.title,
-        author_name: data.metadata.author_name || data.author || data.channel,
-        author_url: data.metadata.author_url || data.channel_url,
-        thumbnail_url: data.metadata.thumbnail_url || data.thumbnail || `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
-      }
-    }
+    const language = picked.language || (typeof data?.language === "string" ? data.language : "") || ""
 
-    language = data.language || data.lang || ""
+    const metadata =
+      sendMetadata
+        ? {
+            title: data?.video?.title ?? data?.title ?? null,
+            author_name: data?.video?.channel ?? data?.channel ?? data?.author ?? null,
+            author_url: data?.video?.channel_url ?? data?.channel_url ?? null,
+            thumbnail_url:
+              data?.video?.thumbnail ??
+              data?.thumbnail ??
+              `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+          }
+        : undefined
 
     // Format response based on requested format
-    if (format === "json" && includeTimestamp && Array.isArray(transcript)) {
+    if (format === "json" && includeTimestamp) {
       return NextResponse.json({
-        transcript,
+        transcript: picked.segments,
         videoId,
         language,
-        metadata: sendMetadata ? metadata : undefined,
+        metadata,
       })
-    } else if (format === "json" && !includeTimestamp && Array.isArray(transcript)) {
+    } else if (format === "json" && !includeTimestamp) {
       // Return plain text when timestamps not requested
-      const plainText = transcript.map((s: any) => s.text).join(" ")
+      const plainText = picked.segments.map((s) => s.text).join(" ")
       return NextResponse.json({
         transcript: plainText,
         videoId,
         language,
-        metadata: sendMetadata ? metadata : undefined,
+        metadata,
       })
     } else {
-      // Return as-is (string transcript)
+      // Return as string
       return NextResponse.json({
-        transcript: typeof transcript === "string" ? transcript : JSON.stringify(transcript),
+        transcript: picked.segments.map((s) => s.text).join(" "),
         videoId,
         language,
-        metadata: sendMetadata ? metadata : undefined,
+        metadata,
       })
     }
   } catch (error: any) {
-    console.error("Transcribe error:", error)
     return NextResponse.json(
       { error: error?.message || "Failed to transcribe video" },
       { status: 500 }
