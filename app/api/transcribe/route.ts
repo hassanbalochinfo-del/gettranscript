@@ -52,15 +52,19 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Call TranscriptAPI.com
-    const transcriptApiUrl = `https://www.transcriptapi.com/api/v1/transcript?video_id=${encodeURIComponent(videoId)}`
+    // Call TranscriptAPI.com via RapidAPI
+    const transcriptApiUrl = "https://transcriptapi.p.rapidapi.com/api/v1/transcript"
     
     const response = await fetch(transcriptApiUrl, {
-      method: "GET",
+      method: "POST",
       headers: {
         "X-RapidAPI-Key": apiKey,
-        "X-RapidAPI-Host": "www.transcriptapi.com",
+        "X-RapidAPI-Host": "transcriptapi.p.rapidapi.com",
+        "Content-Type": "application/json",
       },
+      body: JSON.stringify({
+        video_url: url,
+      }),
     })
 
     if (!response.ok) {
