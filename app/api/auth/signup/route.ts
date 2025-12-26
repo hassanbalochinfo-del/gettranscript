@@ -37,14 +37,38 @@ export async function POST(req: NextRequest) {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10)
 
-    // Create user
-    const user = await prisma.user.create({
-      data: {
-        email,
-        name: name || null,
-        password: hashedPassword,
-        creditsBalance: 0,
-      },
+    // Create user with 5 free signup credits
+    const SIGNUP_BONUS_CREDITS = 5
+    const signupExternalId = `signup_bonus_${email}_${Date.now()}`
+
+    const user = await prisma.$transaction(async (tx) => {
+      // Create user
+      const newUser = await tx.user.create({
+        data: {
+          email,
+          name: name || null,
+          password: hashedPassword,
+          creditsBalance: SIGNUP_BONUS_CREDITS,
+        },
+      })
+
+      // Create credit ledger entry for signup bonus
+      await tx.creditLedger.create({
+        data: {
+          userId: newUser.id,
+          type: "manual_adjustment",
+          amount: SIGNUP_BONUS_CREDITS,
+          balanceAfter: SIGNUP_BONUS_CREDITS,
+          description: "Welcome bonus - 5 free credits for signing up",
+          externalId: signupExternalId,
+          metadata: {
+            reason: "signup_bonus",
+            email,
+          },
+        },
+      })
+
+      return newUser
     })
 
     return NextResponse.json({
