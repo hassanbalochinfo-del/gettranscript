@@ -267,64 +267,43 @@ export default function ResultClient() {
     setLoading(true)
 
     try {
+      const safeTitle = String(metadata?.title || title || "transcript")
+        .trim()
+        .replace(/[^\w\s.-]+/g, "")
+        .slice(0, 80) || "transcript"
+
       let content: string
+      let mimeType: string
+      let filename: string
+
       if (format === "json") {
+        mimeType = "application/json"
         content = JSON.stringify(
           {
             title: metadata?.title || title,
             videoId,
-            language,
+            language: selectedLanguage || language,
             sourceUrl: url || undefined,
-            segments,
+            segments: displaySegments,
             metadata,
+            polished: isPolished,
           },
           null,
           2
         )
+        filename = `${safeTitle}.json`
       } else {
+        mimeType = "text/plain"
         content = displayText
+        filename = `${safeTitle}.txt`
       }
 
-      const response = await fetch("/api/transcript/export", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          format,
-          content,
-          metadata: {
-            title: metadata?.title || title,
-            videoId,
-            language: selectedLanguage || language,
-          },
-        }),
-      })
-
-      if (!response.ok) {
-        const error = await response.json()
-        
-        if (response.status === 401) {
-          toast.error("Please log in to export transcripts")
-          router.push("/login")
-          return
-        }
-        
-        if (response.status === 403 || response.status === 402) {
-          toast.error(error.error || "Subscription required")
-          router.push("/pricing")
-          return
-        }
-
-        throw new Error(error.error || "Export failed")
-      }
-
-      // Download the file
-      const blob = await response.blob()
+      // Client-side download (no server call, no extra credit/gating)
+      const blob = new Blob([content], { type: mimeType })
       const blobUrl = URL.createObjectURL(blob)
       const a = document.createElement("a")
       a.href = blobUrl
-      a.download = response.headers.get("Content-Disposition")?.split('filename="')[1]?.split('"')[0] || `transcript.${format}`
+      a.download = filename
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
