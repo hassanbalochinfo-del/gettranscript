@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
+import { getServerSession } from "next-auth/next"
+import { authOptions } from "@/lib/auth"
+import { prisma } from "@/lib/db"
 
 export const runtime = "nodejs"
 
@@ -104,7 +107,7 @@ function pickTranscriptSegments(data: any): { segments: Array<{ text: string; st
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { url, format = "json", includeTimestamp = true, sendMetadata = false } = body
+    const { url, format = "json", includeTimestamp = true, sendMetadata = false, requestId } = body
 
     if (!url) {
       return NextResponse.json({ error: "URL is required" }, { status: 400 })
@@ -168,6 +171,58 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    // Deduct 1 credit for logged-in users when transcript is generated
+    const session = await getServerSession(authOptions)
+    if (session?.user?.id) {
+      const externalId = typeof requestId === "string" && requestId.trim() ? `transcribe_${requestId.trim()}` : null
+
+      await prisma.$transaction(async (tx) => {
+        // Idempotency: if we already charged this requestId, don't charge again
+        if (externalId) {
+          const existing = await tx.creditLedger.findUnique({ where: { externalId } })
+          if (existing) return
+        }
+
+        const user = await tx.user.findUnique({ where: { id: session.user.id } })
+        if (!user) {
+          // If session exists but user doesn't, treat as auth issue
+          throw new Error("User not found")
+        }
+
+        if (user.creditsBalance <= 0) {
+          const err: any = new Error("OUT_OF_CREDITS")
+          err.code = "OUT_OF_CREDITS"
+          throw err
+        }
+
+        const newBalance = user.creditsBalance - 1
+        await tx.user.update({
+          where: { id: user.id },
+          data: { creditsBalance: newBalance },
+        })
+        await tx.creditLedger.create({
+          data: {
+            userId: user.id,
+            type: "transcript_generated",
+            amount: -1,
+            balanceAfter: newBalance,
+            description: "Transcript generated",
+            externalId: externalId ?? undefined,
+            metadata: {
+              videoId,
+              url,
+            },
+          },
+        })
+      }).catch((e: any) => {
+        // Map out-of-credits to a proper HTTP response
+        if (e?.code === "OUT_OF_CREDITS" || e?.message === "OUT_OF_CREDITS") {
+          throw Object.assign(new Error("OUT_OF_CREDITS"), { httpStatus: 402 })
+        }
+        throw e
+      })
+    }
+
     const language = picked.language || (typeof data?.language === "string" ? data.language : "") || ""
 
     const metadata =
@@ -210,6 +265,12 @@ export async function POST(req: NextRequest) {
       })
     }
   } catch (error: any) {
+    if (error?.httpStatus === 402 || error?.message === "OUT_OF_CREDITS") {
+      return NextResponse.json(
+        { error: "You're out of credits. Please add more credits to generate transcripts.", code: "OUT_OF_CREDITS" },
+        { status: 402 }
+      )
+    }
     return NextResponse.json(
       { error: error?.message || "Failed to transcribe video" },
       { status: 500 }

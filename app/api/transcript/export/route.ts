@@ -11,7 +11,6 @@ export const runtime = "nodejs"
  * Requirements:
  * - User must be logged in
  * - User must have active subscription
- * - User must have credits > 0
  */
 export async function POST(req: NextRequest) {
   try {
@@ -51,17 +50,6 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Check credits balance
-    if (user.creditsBalance <= 0) {
-      return NextResponse.json(
-        {
-          error: "You're out of credits. Upgrade or wait for next billing cycle.",
-          code: "OUT_OF_CREDITS",
-        },
-        { status: 402 }
-      )
-    }
-
     // Parse request body
     const body = await req.json()
     const { format, content, metadata } = body
@@ -72,30 +60,6 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       )
     }
-
-    // Decrement credits
-    const newBalance = user.creditsBalance - 1
-
-    await prisma.$transaction([
-      prisma.user.update({
-        where: { id: user.id },
-        data: { creditsBalance: newBalance },
-      }),
-      prisma.creditLedger.create({
-        data: {
-          userId: user.id,
-          type: "export_used",
-          amount: -1,
-          balanceAfter: newBalance,
-          description: "Transcript export",
-          metadata: {
-            format,
-            videoId: metadata?.videoId,
-            title: metadata?.title,
-          },
-        },
-      }),
-    ])
 
     // Generate file content
     let fileContent: string

@@ -140,6 +140,10 @@ export default function ResultClient() {
       setSegments([])
 
       try {
+        const reqId =
+          (globalThis.crypto as any)?.randomUUID?.() ??
+          `${Date.now()}_${Math.random().toString(16).slice(2)}`
+
         const res = await fetch("/api/transcribe", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -148,6 +152,7 @@ export default function ResultClient() {
             format: "json",
             includeTimestamp: includeTimestamps,
             sendMetadata: true,
+            requestId: reqId,
           }),
         })
 
