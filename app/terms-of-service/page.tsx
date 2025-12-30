@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
-import { FileText, CheckCircle, AlertCircle, Shield, Scale, Mail } from "lucide-react"
+import { FileText, CheckCircle, AlertCircle, Mail } from "lucide-react"
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://gettranscript.com"
 
@@ -41,14 +41,14 @@ export default function TermsOfServicePage() {
 
           <div className="space-y-8">
             {/* Service Description */}
-            <section className="bg-card rounded-lg border p-6 sm:p-8">
-              <div className="flex items-start gap-4 mb-4">
-                <div className="p-2 rounded-lg bg-primary/10">
-                  <FileText className="h-6 w-6 text-primary" />
+            <section className="bg-card rounded-lg border p-8 sm:p-10">
+              <div className="flex items-start gap-5 mb-5">
+                <div className="p-3 rounded-lg bg-primary/10">
+                  <FileText className="h-7 w-7 text-primary" />
                 </div>
                 <div className="flex-1">
-                  <h2 className="text-2xl font-semibold mb-3">Service Description</h2>
-                  <p className="text-muted-foreground leading-7">
+                  <h2 className="text-3xl font-semibold mb-4">Service Description</h2>
+                  <p className="text-muted-foreground leading-8 text-lg">
                     GetTranscript is a free service that helps you fetch and display transcripts for YouTube videos when available. 
                     The service is provided "as is" without warranties of any kind.
                   </p>
@@ -57,28 +57,28 @@ export default function TermsOfServicePage() {
             </section>
 
             {/* Acceptable Use */}
-            <section className="bg-card rounded-lg border p-6 sm:p-8">
-              <div className="flex items-start gap-4 mb-6">
-                <div className="p-2 rounded-lg bg-primary/10">
-                  <CheckCircle className="h-6 w-6 text-primary" />
+            <section className="bg-card rounded-lg border p-8 sm:p-10">
+              <div className="flex items-start gap-5 mb-6">
+                <div className="p-3 rounded-lg bg-primary/10">
+                  <CheckCircle className="h-7 w-7 text-primary" />
                 </div>
                 <div className="flex-1">
-                  <h2 className="text-2xl font-semibold mb-4">Acceptable Use</h2>
-                  <ul className="space-y-3 text-muted-foreground">
+                  <h2 className="text-3xl font-semibold mb-5">Acceptable Use</h2>
+                  <ul className="space-y-4 text-muted-foreground text-lg">
                     <li className="flex items-start gap-3">
-                      <span className="text-primary mt-1">•</span>
+                      <span className="text-primary mt-1.5">•</span>
                       <span>You may use the service for personal or commercial purposes</span>
                     </li>
                     <li className="flex items-start gap-3">
-                      <span className="text-primary mt-1">•</span>
+                      <span className="text-primary mt-1.5">•</span>
                       <span>Do not abuse the service (e.g., excessive automated requests or attempts to overload our systems)</span>
                     </li>
                     <li className="flex items-start gap-3">
-                      <span className="text-primary mt-1">•</span>
+                      <span className="text-primary mt-1.5">•</span>
                       <span>Respect YouTube's terms of service and content owner rights</span>
                     </li>
                     <li className="flex items-start gap-3">
-                      <span className="text-primary mt-1">•</span>
+                      <span className="text-primary mt-1.5">•</span>
                       <span>You are responsible for how you use transcripts obtained through this service</span>
                     </li>
                   </ul>
@@ -87,14 +87,14 @@ export default function TermsOfServicePage() {
             </section>
 
             {/* Service Limitations */}
-            <section className="bg-card rounded-lg border p-6 sm:p-8">
-              <div className="flex items-start gap-4 mb-4">
-                <div className="p-2 rounded-lg bg-primary/10">
-                  <AlertCircle className="h-6 w-6 text-primary" />
+            <section className="bg-card rounded-lg border p-8 sm:p-10">
+              <div className="flex items-start gap-5 mb-5">
+                <div className="p-3 rounded-lg bg-primary/10">
+                  <AlertCircle className="h-7 w-7 text-primary" />
                 </div>
                 <div className="flex-1">
-                  <h2 className="text-2xl font-semibold mb-3">Service Limitations</h2>
-                  <p className="text-muted-foreground leading-7">
+                  <h2 className="text-3xl font-semibold mb-4">Service Limitations</h2>
+                  <p className="text-muted-foreground leading-8 text-lg">
                     Transcripts may not be available for every video. Availability depends on whether the video creator has enabled 
                     captions or transcripts. We may apply rate limits and caching to keep the service reliable and available for all users.
                   </p>
@@ -102,56 +102,24 @@ export default function TermsOfServicePage() {
               </div>
             </section>
 
-            {/* No Warranties */}
-            <section className="bg-card rounded-lg border p-6 sm:p-8">
-              <div className="flex items-start gap-4 mb-4">
-                <div className="p-2 rounded-lg bg-primary/10">
-                  <Shield className="h-6 w-6 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <h2 className="text-2xl font-semibold mb-3">No Warranties</h2>
-                  <p className="text-muted-foreground leading-7">
-                    We make no guarantees about the accuracy, completeness, or availability of transcripts. 
-                    The service is provided without warranties, express or implied.
-                  </p>
-                </div>
-              </div>
-            </section>
-
-            {/* Limitation of Liability */}
-            <section className="bg-card rounded-lg border p-6 sm:p-8">
-              <div className="flex items-start gap-4 mb-4">
-                <div className="p-2 rounded-lg bg-primary/10">
-                  <Scale className="h-6 w-6 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <h2 className="text-2xl font-semibold mb-3">Limitation of Liability</h2>
-                  <p className="text-muted-foreground leading-7">
-                    GetTranscript shall not be liable for any indirect, incidental, special, or consequential damages 
-                    arising from your use of the service.
-                  </p>
-                </div>
-              </div>
-            </section>
-
             {/* Changes to Terms */}
-            <section className="bg-card rounded-lg border p-6 sm:p-8">
-              <h2 className="text-2xl font-semibold mb-3">Changes to Terms</h2>
-              <p className="text-muted-foreground leading-7">
+            <section className="bg-card rounded-lg border p-8 sm:p-10">
+              <h2 className="text-3xl font-semibold mb-4">Changes to Terms</h2>
+              <p className="text-muted-foreground leading-8 text-lg">
                 We may update these Terms of Service from time to time. Continued use of the service after changes 
                 constitutes acceptance of the new terms.
               </p>
             </section>
 
             {/* Contact */}
-            <section className="bg-card rounded-lg border p-6 sm:p-8">
-              <div className="flex items-start gap-4 mb-4">
-                <div className="p-2 rounded-lg bg-primary/10">
-                  <Mail className="h-6 w-6 text-primary" />
+            <section className="bg-card rounded-lg border p-8 sm:p-10">
+              <div className="flex items-start gap-5 mb-5">
+                <div className="p-3 rounded-lg bg-primary/10">
+                  <Mail className="h-7 w-7 text-primary" />
                 </div>
                 <div className="flex-1">
-                  <h2 className="text-2xl font-semibold mb-3">Contact</h2>
-                  <p className="text-muted-foreground leading-7">
+                  <h2 className="text-3xl font-semibold mb-4">Contact</h2>
+                  <p className="text-muted-foreground leading-8 text-lg">
                     If you have questions about these terms, please contact us at{" "}
                     <a 
                       href="mailto:transcriptget@gmail.com" 
