@@ -7,6 +7,12 @@ import { Button } from "@/components/ui/button"
 
 type Plan = "starter" | "pro" | "plus"
 
+const PADDLE_CHECKOUT_URLS: Record<Plan, string | undefined> = {
+  starter: process.env.NEXT_PUBLIC_PADDLE_STARTER_URL,
+  pro: process.env.NEXT_PUBLIC_PADDLE_PRO_URL,
+  plus: process.env.NEXT_PUBLIC_PADDLE_PLUS_URL,
+}
+
 export function CheckoutButton({
   plan,
   variant = "default",
@@ -26,31 +32,21 @@ export function CheckoutButton({
   const onClick = async () => {
     if (loading) return
     setLoading(true)
+    
     try {
-      const res = await fetch("/api/lemonsqueezy/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan }),
-      })
-
-      if (res.status === 401) {
-        toast.error("Please log in to subscribe.")
-        router.push(`/login?next=${encodeURIComponent("/pricing")}`)
+      // Get Paddle checkout URL for this plan
+      const checkoutUrl = PADDLE_CHECKOUT_URLS[plan]
+      
+      if (!checkoutUrl) {
+        toast.error("Checkout not configured for this plan")
         return
       }
 
-      const data = await res.json().catch(() => null)
-      if (!res.ok) {
-        toast.error(data?.error || "Failed to start checkout")
-        return
-      }
-
-      if (!data?.checkoutUrl) {
-        toast.error("Checkout URL missing")
-        return
-      }
-
-      window.location.href = String(data.checkoutUrl)
+      // Redirect to Paddle hosted checkout
+      // Paddle will handle payment and redirect back to /account?payment=success
+      window.location.href = checkoutUrl
+    } catch (error: any) {
+      toast.error(error.message || "Failed to start checkout")
     } finally {
       setLoading(false)
     }

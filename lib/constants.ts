@@ -27,14 +27,14 @@ export const UI_COPY = {
     "Email support"
   ],
   proFeatures: [
-    "200 credits per month",
+    "300 credits per month",
     "Credits roll over",
     "Export transcripts",
     "Priority support",
     "All Starter features"
   ],
   plusFeatures: [
-    "500 credits per month",
+    "600 credits per month",
     "Credits roll over",
     "Export transcripts",
     "Priority support",
@@ -63,8 +63,8 @@ export const UI_COPY = {
 
 export const PLAN_CREDITS = {
   starter: 100,
-  pro: 200,
-  plus: 500
+  pro: 300,
+  plus: 600
 } as const
 
 export const PLAN_PRICES = {

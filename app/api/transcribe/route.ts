@@ -250,8 +250,39 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Deduct 1 credit ONLY if not already charged (idempotency check happened above)
+    // Check subscription status and credits before charging
     if (session?.user?.id && !alreadyCharged) {
+      const user = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        include: {
+          subscriptions: {
+            where: { status: "active" },
+            orderBy: { createdAt: "desc" },
+            take: 1,
+          },
+        },
+      })
+
+      if (!user) {
+        return NextResponse.json({ error: "User not found" }, { status: 404 })
+      }
+
+      // Check if user has active subscription
+      const hasActiveSubscription = user.subscriptions.length > 0
+      if (!hasActiveSubscription) {
+        return NextResponse.json(
+          { error: "Active subscription required to generate transcripts" },
+          { status: 403 }
+        )
+      }
+
+      // Check if user has credits
+      if (user.creditsBalance <= 0) {
+        const err: any = new Error("OUT_OF_CREDITS")
+        err.code = "OUT_OF_CREDITS"
+        throw err
+      }
+
       const idempotencyKey = `transcribe_${session.user.id}_${videoId}`
       
       await prisma.$transaction(async (tx) => {
@@ -264,18 +295,19 @@ export async function POST(req: NextRequest) {
           return
         }
 
-        const user = await tx.user.findUnique({ where: { id: session.user.id } })
-        if (!user) {
+        // Fetch fresh user data inside transaction to avoid race conditions
+        const freshUser = await tx.user.findUnique({ where: { id: user.id } })
+        if (!freshUser) {
           throw new Error("User not found")
         }
 
-        if (user.creditsBalance <= 0) {
+        if (freshUser.creditsBalance <= 0) {
           const err: any = new Error("OUT_OF_CREDITS")
           err.code = "OUT_OF_CREDITS"
           throw err
         }
 
-        const newBalance = user.creditsBalance - 1
+        const newBalance = freshUser.creditsBalance - 1
         await tx.user.update({
           where: { id: user.id },
           data: { creditsBalance: newBalance },
