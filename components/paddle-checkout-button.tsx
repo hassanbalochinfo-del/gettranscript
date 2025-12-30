@@ -32,15 +32,15 @@ export function PaddleCheckoutButton({
   const onClick = () => {
     if (loading) return
 
-    // Get Paddle checkout URL from env
-    const priceIdMap: Record<Plan, string | undefined> = {
-      starter: process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_ID,
-      pro: process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_ID,
-      plus: process.env.NEXT_PUBLIC_PADDLE_PRICE_PLUS_ID,
+    // Get Paddle checkout URLs from env (can be full checkout URLs or just price IDs)
+    const checkoutUrlMap: Record<Plan, string | undefined> = {
+      starter: process.env.NEXT_PUBLIC_PADDLE_CHECKOUT_STARTER_URL || process.env.NEXT_PUBLIC_PADDLE_PRICE_STARTER_ID,
+      pro: process.env.NEXT_PUBLIC_PADDLE_CHECKOUT_PRO_URL || process.env.NEXT_PUBLIC_PADDLE_PRICE_PRO_ID,
+      plus: process.env.NEXT_PUBLIC_PADDLE_CHECKOUT_PLUS_URL || process.env.NEXT_PUBLIC_PADDLE_PRICE_PLUS_ID,
     }
 
-    const priceId = priceIdMap[plan]
-    if (!priceId) {
+    const checkoutValue = checkoutUrlMap[plan]
+    if (!checkoutValue) {
       toast.error("Checkout not configured for this plan")
       return
     }
@@ -49,9 +49,18 @@ export function PaddleCheckoutButton({
     const baseUrl = typeof window !== "undefined" ? window.location.origin : ""
     const successUrl = `${baseUrl}/account?payment=success`
 
-    // Build Paddle checkout URL
-    // Format: https://buy.paddle.com/product/{priceId}?success_url={successUrl}
-    const paddleCheckoutUrl = `https://buy.paddle.com/product/${priceId}?success_url=${encodeURIComponent(successUrl)}`
+    // If it's already a full URL, use it; otherwise build checkout URL
+    let paddleCheckoutUrl: string
+    if (checkoutValue.startsWith("http")) {
+      // Already a full URL, just append success_url if not present
+      const url = new URL(checkoutValue)
+      url.searchParams.set("success_url", successUrl)
+      paddleCheckoutUrl = url.toString()
+    } else {
+      // It's a price ID, use the correct Paddle checkout format
+      // Format: https://buy.paddle.com/checkout?price_id={priceId}&success_url={successUrl}
+      paddleCheckoutUrl = `https://buy.paddle.com/checkout?price_id=${checkoutValue}&success_url=${encodeURIComponent(successUrl)}`
+    }
 
     // Open Paddle checkout
     window.location.href = paddleCheckoutUrl
