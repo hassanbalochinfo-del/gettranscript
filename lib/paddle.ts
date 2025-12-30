@@ -28,16 +28,16 @@ export function getCreditsForPlan(plan: PlanType): number {
 
 /**
  * Map Paddle product/price ID to our plan type
- * You'll configure these in env vars:
+ * Configure via env vars:
  * - PADDLE_PRICE_STARTER_ID
  * - PADDLE_PRICE_PRO_ID
  * - PADDLE_PRICE_PLUS_ID
  */
 export function mapPaddlePriceToPlanType(
-  priceId: string | number
+  priceId: string | number,
+  productName?: string
 ): PlanType | null {
   const priceIdMap: Record<string, PlanType> = {}
-  
   if (process.env.PADDLE_PRICE_STARTER_ID) {
     priceIdMap[String(process.env.PADDLE_PRICE_STARTER_ID)] = "starter"
   }
@@ -53,34 +53,12 @@ export function mapPaddlePriceToPlanType(
     return priceIdMap[idStr]
   }
 
-  return null
-}
-
-/**
- * Extract plan type from Paddle transaction/subscription data
- * Tries multiple fields: price_id, product_id, items[0].price_id
- */
-export function extractPlanFromPaddleData(data: any): PlanType | null {
-  // Try price_id first (most common)
-  if (data.price_id) {
-    const plan = mapPaddlePriceToPlanType(data.price_id)
-    if (plan) return plan
-  }
-
-  // Try items array
-  if (data.items && Array.isArray(data.items) && data.items.length > 0) {
-    const firstItem = data.items[0]
-    if (firstItem.price_id) {
-      const plan = mapPaddlePriceToPlanType(firstItem.price_id)
-      if (plan) return plan
-    }
-  }
-
-  // Try product_id (fallback)
-  if (data.product_id) {
-    // You might need to map product_id to plan if Paddle uses product IDs
-    // For now, return null and log for debugging
-    console.warn("Could not map product_id to plan:", data.product_id)
+  // Fallback: try to match by product name
+  if (productName) {
+    const nameLower = productName.toLowerCase()
+    if (nameLower.includes("starter")) return "starter"
+    if (nameLower.includes("pro")) return "pro"
+    if (nameLower.includes("plus")) return "plus"
   }
 
   return null

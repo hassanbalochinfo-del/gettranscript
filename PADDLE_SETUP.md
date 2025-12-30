@@ -1,146 +1,112 @@
 # Paddle Integration Setup Guide
 
-## ✅ What's Implemented
+## ✅ What's Already Implemented
 
-- **Paddle webhook handler** at `/api/paddle/webhook`
-- **Credit assignment** on `transaction.completed` events
-- **Subscription management** (create, update, cancel)
-- **Idempotent credit grants** (prevents double-charging)
-- **Subscription status check** before transcription
-- **Plan → Credits mapping**: Starter (100), Pro (300), Plus (600)
-- **Lemon Squeezy code removed**
+- ✅ Paddle webhook handler at `/api/paddle/webhook`
+- ✅ Credit granting logic (idempotent, prevents double-charging)
+- ✅ Account page auto-refreshes credits after checkout
+- ✅ Paddle checkout buttons on pricing pages
+- ✅ Subscription management (create, update, cancel)
 
-## 📋 Required Environment Variables
+## 📋 Step-by-Step Setup
 
-Add these to **Vercel** → **Settings** → **Environment Variables**:
+### 1. Create Products in Paddle
 
-### Paddle Webhook
-```
-PADDLE_WEBHOOK_SECRET=your_paddle_webhook_secret
-```
+1. Go to **Paddle Dashboard** → **Catalog** → **Products**
+2. Create 3 subscription products:
+   - **Starter**: $5/month → 100 credits
+   - **Pro**: $10/month → 200 credits
+   - **Plus**: $15/month → 500 credits
+3. For each product, copy the **Price ID** (you'll need this)
 
-### Paddle Price IDs (for plan mapping)
-```
-PADDLE_PRICE_STARTER_ID=pri_xxxxx
-PADDLE_PRICE_PRO_ID=pri_xxxxx
-PADDLE_PRICE_PLUS_ID=pri_xxxxx
-```
+### 2. Get Price IDs
 
-### Paddle Checkout URLs (hosted checkout links)
-```
-NEXT_PUBLIC_PADDLE_STARTER_URL=https://buy.paddle.com/product/xxxxx
-NEXT_PUBLIC_PADDLE_PRO_URL=https://buy.paddle.com/product/xxxxx
-NEXT_PUBLIC_PADDLE_PLUS_URL=https://buy.paddle.com/product/xxxxx
-```
+For each product you created:
+1. Go to **Paddle Dashboard** → **Catalog** → **Products**
+2. Click on the product
+3. Copy the **Price ID** (looks like `pri_01...`)
+4. Add to Vercel environment variables:
+   ```
+   NEXT_PUBLIC_PADDLE_PRICE_STARTER_ID=pri_01...
+   NEXT_PUBLIC_PADDLE_PRICE_PRO_ID=pri_01...
+   NEXT_PUBLIC_PADDLE_PRICE_PLUS_ID=pri_01...
+   ```
 
-## 🔧 Paddle Dashboard Setup
+### 3. Set Up Webhook
 
-### 1. Create Products & Prices
-
-In Paddle Dashboard → **Products**:
-1. Create 3 products: Starter ($5), Pro ($10), Plus ($15)
-2. Copy the **Price IDs** (starts with `pri_`)
-3. Add them to Vercel env vars as shown above
-
-### 2. Create Checkout Links
-
-For each product:
-1. Go to **Checkout Links** → **Create checkout link**
-2. Set **Success URL**: `https://YOUR_DOMAIN.com/account?payment=success`
-3. Set **Cancel URL**: `https://YOUR_DOMAIN.com/pricing`
-4. Copy the checkout URL
-5. Add to Vercel as `NEXT_PUBLIC_PADDLE_STARTER_URL`, etc.
-
-### 3. Configure Webhook
-
-1. Go to **Developer Tools** → **Notifications** → **Webhooks**
-2. Click **Add webhook**
+1. Go to **Paddle Dashboard** → **Developer Tools** → **Notifications** (or **Webhooks**)
+2. Click **"Add endpoint"** or **"Create webhook"**
 3. **Webhook URL**: `https://YOUR_DOMAIN.com/api/paddle/webhook`
-4. **Events to subscribe**:
+   - Replace `YOUR_DOMAIN` with your actual domain
+   - Example: `https://gettranscript.vercel.app/api/paddle/webhook`
+4. **Events to subscribe to** (check all):
    - ✅ `transaction.completed`
    - ✅ `subscription.created`
    - ✅ `subscription.updated`
    - ✅ `subscription.canceled`
-5. Copy the **Webhook signing secret**
-6. Add to Vercel as `PADDLE_WEBHOOK_SECRET`
+5. Click **"Create"** or **"Save"**
+6. **Copy the webhook signing secret** (shown after creation)
+7. Add to Vercel:
+   - **Key**: `PADDLE_WEBHOOK_SECRET`
+   - **Value**: (paste the secret)
+   - **Environment**: All environments
 
-## 🗄️ Database Migration
+### 4. Configure Checkout Success URL
 
-The Prisma schema has been updated to use Paddle fields instead of Lemon Squeezy:
+In Paddle, configure your checkout to redirect to:
+- **Success URL**: `https://YOUR_DOMAIN.com/account?payment=success`
+- **Cancel URL**: `https://YOUR_DOMAIN.com/pricing`
 
-**Old fields (removed):**
-- `lemonsqueezySubscriptionId`
-- `lemonsqueezyCustomerId`
-- `lemonsqueezyOrderId`
+This can usually be set in:
+- **Paddle Dashboard** → **Settings** → **Checkout**
+- Or via Paddle API when creating checkout links
 
-**New fields (added):**
-- `paddleSubscriptionId`
-- `paddleCustomerId`
-- `paddleTransactionId`
+### 5. Run Database Migration
 
-**To apply the migration:**
+The schema has been updated to add Paddle fields. Run:
 
 ```bash
-# Generate Prisma client with new schema
-npx prisma generate
-
-# Create and apply migration
 npx prisma migrate dev --name add_paddle_fields
+```
 
-# Or for production:
+Or if deploying to production:
+
+```bash
 npx prisma migrate deploy
 ```
 
-**Or manually update the database:**
+### 6. Test It!
 
-```sql
--- Remove old Lemon Squeezy columns
-ALTER TABLE subscriptions 
-  DROP COLUMN IF EXISTS "lemonsqueezySubscriptionId",
-  DROP COLUMN IF EXISTS "lemonsqueezyCustomerId",
-  DROP COLUMN IF EXISTS "lemonsqueezyOrderId";
-
--- Add new Paddle columns
-ALTER TABLE subscriptions 
-  ADD COLUMN IF NOT EXISTS "paddleSubscriptionId" TEXT,
-  ADD COLUMN IF NOT EXISTS "paddleCustomerId" TEXT,
-  ADD COLUMN IF NOT EXISTS "paddleTransactionId" TEXT;
-
--- Create unique index on paddleSubscriptionId
-CREATE UNIQUE INDEX IF NOT EXISTS "subscriptions_paddleSubscriptionId_key" 
-  ON subscriptions("paddleSubscriptionId");
-
--- Create index for lookups
-CREATE INDEX IF NOT EXISTS "subscriptions_paddleSubscriptionId_idx" 
-  ON subscriptions("paddleSubscriptionId");
-```
+1. **Enable Test Mode** in Paddle (if available)
+2. Go to your website → **Pricing** page
+3. Click **"Get Started"** on any plan
+4. Complete checkout with test card
+5. Should redirect to `/account?payment=success`
+6. Credits should appear within a few seconds!
 
 ## 🔍 How It Works
 
-1. **User clicks "Get Started"** → Redirects to Paddle hosted checkout
+1. **User clicks "Get Started"** → Redirects to Paddle checkout
 2. **User completes payment** → Paddle processes payment
-3. **Paddle sends webhook** → Your `/api/paddle/webhook` receives `transaction.completed`
+3. **Paddle sends webhook** → Your `/api/paddle/webhook` receives `transaction.completed` event
 4. **Webhook handler**:
    - Verifies signature
    - Finds user by email from webhook payload
-   - Determines plan from `price_id`
-   - Grants credits (idempotent - uses `transaction_id` as key)
-   - Updates/creates subscription record
+   - Grants credits (idempotent - won't double-charge)
+   - Updates subscription status
 5. **User redirected to** `/account?payment=success`
 6. **Account page polls** `/api/me` for ~30 seconds to show credits immediately
 
 ## 🧪 Testing Checklist
 
-- [ ] Paddle products created and Price IDs copied
-- [ ] Checkout URLs created with success/cancel URLs
+- [ ] Price IDs added to Vercel env vars
 - [ ] Webhook created and secret added to Vercel
-- [ ] All env vars added to Vercel
-- [ ] Database migration applied
-- [ ] Test purchase with Paddle test card
+- [ ] Success/Cancel URLs configured in Paddle
+- [ ] Database migration run
+- [ ] Test purchase with test card
 - [ ] Verify credits appear in account page
 - [ ] Verify credits don't increase on page refresh
 - [ ] Check webhook logs in Vercel (Functions → `/api/paddle/webhook`)
-- [ ] Test subscription status check (block transcription without active subscription)
 
 ## 🚨 Troubleshooting
 
@@ -148,32 +114,32 @@ CREATE INDEX IF NOT EXISTS "subscriptions_paddleSubscriptionId_idx"
 1. Check Vercel function logs: **Deployments** → **Functions** → `/api/paddle/webhook`
 2. Verify webhook secret matches in both places
 3. Ensure user email in Paddle matches user email in your app
-4. Check that webhook events are being received (Paddle → Developer Tools → Notifications)
+4. Check that webhook events are being received (Paddle Dashboard → Webhooks → View logs)
 
 ### "User not found" errors?
 - User must sign up in your app **first** (with the same email they use in Paddle checkout)
 - Webhook matches users by email address
 
-### "Could not determine plan" errors?
-- Verify `PADDLE_PRICE_STARTER_ID`, `PADDLE_PRICE_PRO_ID`, `PADDLE_PRICE_PLUS_ID` are set correctly
-- Check that the `price_id` in the webhook payload matches your configured Price IDs
-
 ### Double credits?
 - Shouldn't happen (idempotency uses transaction ID)
 - If it does, check that `externalId` in `credit_ledger` table is unique
 
-## 📝 Removed Files
+## 📝 Environment Variables Summary
 
-The following Lemon Squeezy files have been removed:
-- `app/api/lemonsqueezy/checkout/route.ts`
-- `app/api/lemonsqueezy/webhook/route.ts`
-- `lib/lemonsqueezy.ts`
+Add these to **Vercel** → **Settings** → **Environment Variables**:
 
-## 🎯 Next Steps
+```
+# Paddle Price IDs (required)
+NEXT_PUBLIC_PADDLE_PRICE_STARTER_ID=pri_01...
+NEXT_PUBLIC_PADDLE_PRICE_PRO_ID=pri_01...
+NEXT_PUBLIC_PADDLE_PRICE_PLUS_ID=pri_01...
 
-1. **Set up Paddle products** in Paddle Dashboard
-2. **Create checkout links** with success/cancel URLs
-3. **Configure webhook** and add secret to Vercel
-4. **Add all env vars** to Vercel
-5. **Run database migration** (or apply SQL manually)
-6. **Test the full flow** with a test purchase
+# Webhook secret (required)
+PADDLE_WEBHOOK_SECRET=your_secret_here
+```
+
+## 🎯 Next Steps After Setup
+
+1. **Test in Test Mode** first (if Paddle supports it)
+2. **Monitor webhook logs** in Vercel for any errors
+3. **Go live** when ready!

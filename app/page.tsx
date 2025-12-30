@@ -12,7 +12,7 @@ import { Footer } from "@/components/footer"
 import { toast } from "sonner"
 import { StructuredData } from "@/components/StructuredData"
 import { UI_COPY, PLAN_PRICES, PLAN_CREDITS } from "@/lib/constants"
-import { CheckoutButton } from "@/components/checkout-button"
+import { PaddleCheckoutButton } from "@/components/paddle-checkout-button"
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://gettranscript.com"
 
@@ -327,7 +327,7 @@ export default function HomePage() {
                         </li>
                       ))}
                     </ul>
-                    <CheckoutButton
+                    <PaddleCheckoutButton
                       plan={plan.plan as any}
                       className="w-full"
                       variant={plan.highlighted ? "default" : "outline"}
@@ -337,7 +337,7 @@ export default function HomePage() {
                         {UI_COPY.getStarted}
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </span>
-                    </CheckoutButton>
+                    </PaddleCheckoutButton>
                   </CardContent>
                 </Card>
               ))}
