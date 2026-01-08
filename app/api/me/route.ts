@@ -13,20 +13,14 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    // First, get user without subscriptions to avoid potential query issues
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      include: {
-        subscriptions: {
-          where: {
-            status: {
-              in: ["active", "inactive", "cancelled", "payment_failed", "unpaid"],
-            },
-          },
-          orderBy: {
-            createdAt: "desc",
-          },
-          take: 1, // Get most recent subscription
-        },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        creditsBalance: true,
       },
     })
 
@@ -34,7 +28,27 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 })
     }
 
-    const activeSubscription = user.subscriptions.find((sub) => sub.status === "active")
+    // Then get subscriptions separately
+    let activeSubscription = null
+    try {
+      const subscriptions = await prisma.subscription.findMany({
+        where: {
+          userId: session.user.id,
+          status: {
+            in: ["active", "inactive", "cancelled", "payment_failed", "unpaid"],
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        take: 1,
+      })
+
+      activeSubscription = subscriptions.find((sub) => sub.status === "active") || null
+    } catch (subError) {
+      // If subscription query fails, log but don't fail the whole request
+      console.error("Error fetching subscriptions:", subError)
+    }
 
     return NextResponse.json({
       user: {
@@ -54,6 +68,13 @@ export async function GET(req: NextRequest) {
     })
   } catch (error: any) {
     console.error("Error fetching user data:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+    return NextResponse.json(
+      { 
+        error: "Internal server error",
+        message: error?.message || "Unknown error",
+        details: process.env.NODE_ENV === "development" ? String(error) : undefined
+      },
+      { status: 500 }
+    )
   }
 }
