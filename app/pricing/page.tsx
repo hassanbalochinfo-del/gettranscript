@@ -3,7 +3,7 @@ import { Footer } from "@/components/footer"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Check } from "lucide-react"
 import { UI_COPY, PLAN_PRICES, PLAN_CREDITS } from "@/lib/constants"
-import { PaddleCheckoutButton } from "@/components/paddle-checkout-button"
+import { CheckoutButton } from "@/components/checkout-button"
 
 const plans = [
   {
@@ -85,14 +85,14 @@ export default function PricingPage() {
                     ))}
                   </ul>
                   <div className="mt-8">
-                    <PaddleCheckoutButton
+                    <CheckoutButton
                       plan={plan.plan as any}
                       variant={plan.highlighted ? "default" : "outline"}
                       size="lg"
                       className="w-full"
                     >
                       {UI_COPY.getStarted}
-                    </PaddleCheckoutButton>
+                    </CheckoutButton>
                   </div>
                 </CardContent>
               </Card>

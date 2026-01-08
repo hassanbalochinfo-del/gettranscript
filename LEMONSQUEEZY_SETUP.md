@@ -1,44 +1,54 @@
 # Lemon Squeezy Integration Setup Guide
 
-## ✅ What's Already Done
-- Webhook handler implemented at `/api/lemonsqueezy/webhook`
-- Credit granting logic (idempotent, prevents double-charging)
-- Account page auto-refreshes credits after checkout
-- Products created in Lemon Squeezy (Starter $5, Pro $10, Plus $15)
+## ✅ What's Already Implemented
+
+- ✅ Lemon Squeezy webhook handler at `/api/lemonsqueezy/webhook`
+- ✅ Credit granting logic (idempotent, prevents double-charging)
+- ✅ Account page auto-refreshes credits after checkout
+- ✅ API-based checkout with redirect URLs
+- ✅ Subscription management (create, update, cancel)
 
 ## 📋 Step-by-Step Setup
 
-### 1. Get Checkout URLs
+### 1. Create Products in Lemon Squeezy
 
-For each product (Starter, Pro, Plus):
-1. Go to **Products** → Click on the product
-2. Click the **"Share"** button (or find "Checkout URL" in product settings)
-3. Copy the checkout URL
-4. Add to Vercel environment variables:
-   ```
-   NEXT_PUBLIC_LS_STARTER_URL=https://YOUR_STORE.lemonsqueezy.com/checkout/buy/...
-   NEXT_PUBLIC_LS_PRO_URL=https://YOUR_STORE.lemonsqueezy.com/checkout/buy/...
-   NEXT_PUBLIC_LS_PLUS_URL=https://YOUR_STORE.lemonsqueezy.com/checkout/buy/...
-   ```
+1. Go to **Lemon Squeezy Dashboard** → **Products**
+2. Create 3 subscription products:
+   - **Starter**: $5/month → 100 credits
+   - **Pro**: $10/month → 200 credits
+   - **Plus**: $15/month → 500 credits
+3. For each product, copy the **Variant ID** (you'll need this)
 
-### 2. Get Variant IDs (Recommended)
+### 2. Get Variant IDs
 
 For each product:
-1. Open the product → Go to **Variants** tab
-2. Copy the **Variant ID** (numeric, e.g., `12345`)
-3. Add to Vercel:
+1. Go to **Products** → Click on the product
+2. Go to **Variants** tab
+3. Copy the **Variant ID** (numeric, e.g., `12345`)
+4. Add to Vercel environment variables:
    ```
    LEMONSQUEEZY_VARIANT_STARTER_ID=12345
    LEMONSQUEEZY_VARIANT_PRO_ID=12346
    LEMONSQUEEZY_VARIANT_PLUS_ID=12347
    ```
 
-### 3. Configure Webhooks
+### 3. Get API Key and Store ID
 
-1. Go to **Settings** → **Webhooks**
+1. Go to **Lemon Squeezy Dashboard** → **Settings** → **API**
+2. Create an **API Key** (if you don't have one)
+3. Copy the **API Key**
+4. Find your **Store ID** (usually in the URL or Settings)
+5. Add to Vercel:
+   ```
+   LEMONSQUEEZY_API_KEY=your_api_key_here
+   LEMONSQUEEZY_STORE_ID=260798
+   ```
+
+### 4. Configure Webhooks
+
+1. Go to **Lemon Squeezy Dashboard** → **Settings** → **Webhooks**
 2. Click **"Create webhook"**
-3. **Webhook URL**: `https://YOUR_DOMAIN.com/api/lemonsqueezy/webhook`
-   - Replace `YOUR_DOMAIN` with your actual domain (e.g., `get-transcript.vercel.app`)
+3. **Webhook URL**: `https://www.gettranscript.co/api/lemonsqueezy/webhook`
 4. **Events to subscribe to** (check all):
    - ✅ `subscription_created`
    - ✅ `subscription_updated`
@@ -52,47 +62,39 @@ For each product:
    LEMONSQUEEZY_WEBHOOK_SECRET=your_webhook_secret_here
    ```
 
-### 4. Set Checkout Success/Cancel URLs
+### 5. Configure Checkout Success URLs
 
 For each product variant:
 1. Go to **Products** → Click product → **Variants** tab
 2. Edit the variant
-3. Find **"Redirect URLs"** or **"Success/Cancel URLs"** section
-4. Set:
-   - **Success URL**: `https://YOUR_DOMAIN.com/account?payment=success`
-   - **Cancel URL**: `https://YOUR_DOMAIN.com/pricing`
-5. Save
+3. Find **"Purchase confirmation modal"** section
+4. Set **Button link** to: `https://www.gettranscript.co/account?payment=success`
+5. In **"Email receipt"** section, set **Button link** to: `https://www.gettranscript.co/account?payment=success`
+6. Save
 
-### 5. Enable Test Mode (For Testing)
-
-1. Toggle **"Test mode"** ON (bottom left of Lemon Squeezy dashboard)
-2. Use test card: `4242 4242 4242 4242` (any future expiry, any CVC)
-3. Test the full flow:
-   - Click "Get Started" on pricing page
-   - Complete checkout with test card
-   - Should redirect to `/account?payment=success`
-   - Credits should appear within a few seconds
+**Note:** The actual redirect happens via the API checkout's `redirect_url`, but these button links are also useful.
 
 ## 🔍 How It Works
 
-1. **User clicks "Get Started"** → Redirects to Lemon Squeezy checkout
-2. **User completes payment** → Lemon Squeezy processes payment
-3. **Lemon Squeezy sends webhook** → Your `/api/lemonsqueezy/webhook` receives event
-4. **Webhook handler**:
+1. **User clicks "Get Started"** → Calls `/api/lemonsqueezy/checkout` API
+2. **API creates checkout** → Lemon Squeezy returns checkout URL with `redirect_url` set
+3. **User completes payment** → Lemon Squeezy processes payment
+4. **Lemon Squeezy sends webhook** → Your `/api/lemonsqueezy/webhook` receives `subscription_payment_success` event
+5. **Webhook handler**:
    - Verifies signature
    - Finds user by email from webhook payload
    - Grants credits (idempotent - won't double-charge)
    - Updates subscription status
-5. **User redirected to** `/account?payment=success`
-6. **Account page polls** `/api/me` for ~30 seconds to show credits immediately
+6. **User redirected to** `/account?payment=success`
+7. **Account page polls** `/api/me` for ~30 seconds to show credits immediately
 
 ## 🧪 Testing Checklist
 
-- [ ] Checkout URLs added to Vercel env vars
-- [ ] Variant IDs added to Vercel env vars (optional)
+- [ ] Products created in Lemon Squeezy
+- [ ] Variant IDs added to Vercel env vars
+- [ ] API key and Store ID added to Vercel
 - [ ] Webhook created and secret added to Vercel
-- [ ] Success/Cancel URLs configured in Lemon Squeezy
-- [ ] Test mode enabled
+- [ ] Success URLs configured in Lemon Squeezy
 - [ ] Test purchase with test card
 - [ ] Verify credits appear in account page
 - [ ] Verify credits don't increase on page refresh
@@ -114,17 +116,21 @@ For each product variant:
 - Shouldn't happen (idempotency uses invoice ID)
 - If it does, check that `externalId` in `credit_ledger` table is unique
 
+### Checkout not working?
+- Verify `LEMONSQUEEZY_API_KEY` and `LEMONSQUEEZY_STORE_ID` are set
+- Check that variant IDs are correct
+- Ensure user is logged in (checkout requires authentication)
+
 ## 📝 Environment Variables Summary
 
 Add these to **Vercel** → **Settings** → **Environment Variables**:
 
 ```
-# Checkout URLs (required)
-NEXT_PUBLIC_LS_STARTER_URL=https://...
-NEXT_PUBLIC_LS_PRO_URL=https://...
-NEXT_PUBLIC_LS_PLUS_URL=https://...
+# API Configuration (required)
+LEMONSQUEEZY_API_KEY=your_api_key_here
+LEMONSQUEEZY_STORE_ID=260798
 
-# Variant IDs (optional, but recommended)
+# Variant IDs (required)
 LEMONSQUEEZY_VARIANT_STARTER_ID=12345
 LEMONSQUEEZY_VARIANT_PRO_ID=12346
 LEMONSQUEEZY_VARIANT_PLUS_ID=12347
@@ -135,7 +141,6 @@ LEMONSQUEEZY_WEBHOOK_SECRET=your_secret_here
 
 ## 🎯 Next Steps After Setup
 
-1. **Test in Test Mode** first
-2. **Wait for Lemon Squeezy application approval** (if still pending)
-3. **Disable Test Mode** when ready for production
-4. **Monitor webhook logs** in Vercel for any errors
+1. **Test in Test Mode** first (if available)
+2. **Monitor webhook logs** in Vercel for any errors
+3. **Go live** when ready!
