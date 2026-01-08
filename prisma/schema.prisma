@@ -79,10 +79,7 @@ model Subscription {
   status                    String   // "active" | "inactive" | "cancelled" | "payment_failed" | "unpaid"
   plan                      String   // "starter" | "pro" | "plus"
   currentPeriodEnd          DateTime?
-  // Paddle fields
-  paddleSubscriptionId      String?  @unique
-  paddleCustomerId          String?
-  // Legacy Lemon Squeezy fields (deprecated)
+  // Lemon Squeezy fields
   lemonsqueezySubscriptionId String? @unique
   lemonsqueezyCustomerId     String?
   lemonsqueezyOrderId        String? @unique
@@ -92,7 +89,6 @@ model Subscription {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
-  @@index([paddleSubscriptionId])
   @@index([lemonsqueezySubscriptionId])
   @@map("subscriptions")
 }
