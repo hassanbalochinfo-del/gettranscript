@@ -41,7 +41,9 @@ export function CheckoutButton({
 
       const data = await res.json().catch(() => null)
       if (!res.ok) {
-        toast.error(data?.error || "Failed to start checkout")
+        const errorMsg = data?.error || data?.detail?.errors?.[0]?.detail || "Failed to start checkout"
+        console.error("Checkout error:", { status: res.status, data })
+        toast.error(errorMsg)
         return
       }
 

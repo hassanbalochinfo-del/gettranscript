@@ -102,8 +102,18 @@ export async function POST(req: NextRequest) {
 
     const json = await res.json().catch(() => null)
     if (!res.ok) {
+      console.error("Lemon Squeezy API error:", {
+        status: res.status,
+        statusText: res.statusText,
+        response: json,
+        payload: JSON.stringify(payload, null, 2),
+      })
       return NextResponse.json(
-        { error: "Failed to create checkout", detail: json },
+        { 
+          error: json?.errors?.[0]?.detail || json?.error || "Failed to create checkout",
+          detail: json,
+          status: res.status,
+        },
         { status: res.status }
       )
     }
