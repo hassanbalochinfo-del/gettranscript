@@ -1,14 +1,15 @@
 "use client"
 
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { toast } from "sonner"
-import { ArrowLeft, Check, Copy, Download, Loader2, Languages, FileText } from "lucide-react"
+import { ArrowLeft, Check, Copy, Download, Loader2, Languages, FileText, Sparkles } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 type TranscriptMetadata = {
@@ -82,6 +83,7 @@ export default function ResultClient() {
   const [selectedLanguage, setSelectedLanguage] = useState<string>("")
   const [summary, setSummary] = useState<string | null>(null)
   const [summarizing, setSummarizing] = useState(false)
+  const [activeTab, setActiveTab] = useState<"transcript" | "summary">("transcript")
 
   const displayText = useMemo(() => {
     return translatedText || rawTranscript || ""
@@ -154,6 +156,7 @@ export default function ResultClient() {
 
       if (data.ok && data.summary) {
         setSummary(data.summary)
+        setActiveTab("summary")
         toast.success("Summary generated successfully!")
       } else {
         throw new Error("Invalid response from server")
@@ -438,101 +441,28 @@ export default function ResultClient() {
   const embedId = extractYouTubeVideoId(url) || videoId
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen bg-white flex flex-col">
       <Navbar />
 
       <main className="flex-1">
-        <div className="container mx-auto max-w-6xl px-4 py-8 sm:px-6">
-          <div className="mb-6 flex items-start justify-between gap-4 flex-wrap">
-            <div>
-              <Link href="/" className="inline-flex items-center text-sm text-muted-foreground hover:text-foreground">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to home
-              </Link>
-              <h1 className="text-2xl font-semibold tracking-tight">{metadata?.title || title || "Transcript"}</h1>
-              {url ? (
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Source:{" "}
-                  <a href={url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-foreground">
-                    {url}
-                  </a>
-                </p>
-              ) : null}
-            </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="mb-4">
+            <Link href="/" className="inline-flex items-center text-sm text-gray-600 hover:text-gray-900">
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Back to home
+            </Link>
+          </div>
 
-            <div className="flex items-center gap-2 flex-wrap">
-              {rawTranscript && (
-                <>
-                  <div className="flex items-center gap-2">
-                    <Select
-                      value={selectedLanguage}
-                      onValueChange={handleTranslate}
-                      disabled={translating}
-                    >
-                      <SelectTrigger className="w-[160px]">
-                        <SelectValue placeholder={<><Languages className="h-4 w-4 mr-2 inline" />Translate</>} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="es">🇪🇸 Spanish</SelectItem>
-                        <SelectItem value="fr">🇫🇷 French</SelectItem>
-                        <SelectItem value="de">🇩🇪 German</SelectItem>
-                        <SelectItem value="it">🇮🇹 Italian</SelectItem>
-                        <SelectItem value="pt">🇵🇹 Portuguese</SelectItem>
-                        <SelectItem value="ru">🇷🇺 Russian</SelectItem>
-                        <SelectItem value="ja">🇯🇵 Japanese</SelectItem>
-                        <SelectItem value="ko">🇰🇷 Korean</SelectItem>
-                        <SelectItem value="zh">🇨🇳 Chinese</SelectItem>
-                        <SelectItem value="ar">🇸🇦 Arabic</SelectItem>
-                        <SelectItem value="hi">🇮🇳 Hindi</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {translating && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
-                    {translatedText && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setTranslatedText(null)
-                          setSelectedLanguage("")
-                        }}
-                      >
-                        Show Original
-                      </Button>
-                    )}
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleSummarize}
-                    disabled={summarizing || !rawTranscript}
-                  >
-                    {summarizing ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Summarizing...
-                      </>
-                    ) : (
-                      <>
-                        <FileText className="h-4 w-4 mr-2" />
-                        Summarize
-                      </>
-                    )}
-                  </Button>
-                </>
-              )}
-              <Button variant="outline" size="sm" onClick={handleCopy} disabled={!displayText}>
-                {copied ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
-                {copied ? "Copied" : "Copy"}
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => handleDownload("txt")} disabled={!displayText}>
-                <Download className="h-4 w-4 mr-2" />
-                Download TXT
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => handleDownload("json")} disabled={!displayText}>
-                <Download className="h-4 w-4 mr-2" />
-                Download JSON
-              </Button>
-            </div>
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">{metadata?.title || title || "Transcript"}</h1>
+            {url ? (
+              <p className="text-gray-600 text-sm">
+                Source:{" "}
+                <a href={url} target="_blank" rel="noopener noreferrer" className="text-emerald-600 hover:text-emerald-700">
+                  {url}
+                </a>
+              </p>
+            ) : null}
           </div>
 
           {!url && !transcriptParam ? (
@@ -590,10 +520,10 @@ export default function ResultClient() {
           ) : null}
 
           {!loading && !error ? (
-            <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-              <div className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2 space-y-6">
                 {canShowVideo && embedId ? (
-                  <Card className="border-border/60 overflow-hidden">
+                  <Card className="bg-gray-50 border-gray-200 overflow-hidden">
                     <div className="aspect-video w-full bg-black">
                       <iframe
                         className="h-full w-full"
@@ -606,129 +536,271 @@ export default function ResultClient() {
                   </Card>
                 ) : null}
 
-                <Card className="border-border/60">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base">
-                      {translatedText ? "Translated Transcript" : "Transcript"}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    {displayText ? (
-                      <div className="max-h-[70vh] overflow-auto rounded-lg border border-border/60 bg-muted/20 p-6">
-                        <p className="text-sm leading-relaxed whitespace-pre-wrap break-words text-foreground">
-                          {displayText}
-                        </p>
-                      </div>
-                    ) : (
-                      <p className="text-sm text-muted-foreground">No transcript to display.</p>
-                    )}
-                  </CardContent>
+                <Card className="bg-gray-50 border-gray-200 p-4">
+                  <div className="flex items-center justify-between gap-4 flex-wrap">
+                    <p className="text-gray-700 text-sm font-medium">Quick Actions</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+                      <Select
+                        value={selectedLanguage}
+                        onValueChange={handleTranslate}
+                        disabled={translating || !rawTranscript}
+                      >
+                        <SelectTrigger className="h-9 bg-white border-gray-300 text-gray-900 hover:bg-emerald-600 hover:border-emerald-500 hover:text-white transition-all">
+                          <SelectValue
+                            placeholder={
+                              <>
+                                <Languages className="h-4 w-4 mr-2 inline" />
+                                Translate
+                              </>
+                            }
+                          />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="es">🇪🇸 Spanish</SelectItem>
+                          <SelectItem value="fr">🇫🇷 French</SelectItem>
+                          <SelectItem value="de">🇩🇪 German</SelectItem>
+                          <SelectItem value="it">🇮🇹 Italian</SelectItem>
+                          <SelectItem value="pt">🇵🇹 Portuguese</SelectItem>
+                          <SelectItem value="ru">🇷🇺 Russian</SelectItem>
+                          <SelectItem value="ja">🇯🇵 Japanese</SelectItem>
+                          <SelectItem value="ko">🇰🇷 Korean</SelectItem>
+                          <SelectItem value="zh">🇨🇳 Chinese</SelectItem>
+                          <SelectItem value="ar">🇸🇦 Arabic</SelectItem>
+                          <SelectItem value="hi">🇮🇳 Hindi</SelectItem>
+                        </SelectContent>
+                      </Select>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="bg-white border-gray-300 text-gray-900 hover:bg-emerald-600 hover:border-emerald-500 hover:text-white transition-all"
+                        onClick={handleSummarize}
+                        disabled={summarizing || !rawTranscript}
+                      >
+                        {summarizing ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Summarizing...
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="h-4 w-4 mr-2" />
+                            Summarize
+                          </>
+                        )}
+                      </Button>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="bg-white border-gray-300 text-gray-900 hover:bg-emerald-600 hover:border-emerald-500 hover:text-white transition-all"
+                        onClick={handleCopy}
+                        disabled={!displayText}
+                      >
+                        {copied ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
+                        {copied ? "Copied" : "Copy"}
+                      </Button>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="bg-white border-gray-300 text-gray-900 hover:bg-emerald-600 hover:border-emerald-500 hover:text-white transition-all"
+                        onClick={() => handleDownload("txt")}
+                        disabled={!displayText}
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        TXT
+                      </Button>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="bg-white border-gray-300 text-gray-900 hover:bg-emerald-600 hover:border-emerald-500 hover:text-white transition-all"
+                        onClick={() => handleDownload("json")}
+                        disabled={!displayText}
+                      >
+                        <Download className="h-4 w-4 mr-2" />
+                        JSON
+                      </Button>
+                    </div>
+                  </div>
+                  {translatedText ? (
+                    <div className="mt-3">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setTranslatedText(null)
+                          setSelectedLanguage("")
+                        }}
+                      >
+                        Show Original
+                      </Button>
+                    </div>
+                  ) : null}
                 </Card>
 
-                {summary && (
-                  <Card className="border-primary/40 bg-primary/5">
-                    <CardHeader className="pb-3">
-                      <div className="flex items-center justify-between">
-                        <CardTitle className="text-base flex items-center gap-2">
-                          <FileText className="h-5 w-5 text-primary" />
-                          Video Summary
-                        </CardTitle>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setSummary(null)}
-                        >
-                          Hide
-                        </Button>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="rounded-lg border border-primary/20 bg-background p-6">
-                        <p className="text-sm leading-relaxed whitespace-pre-wrap break-words text-foreground">
-                          {summary}
-                        </p>
-                      </div>
-                      <div className="mt-4 flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            navigator.clipboard.writeText(summary)
-                            toast.success("Summary copied to clipboard!")
-                          }}
-                        >
-                          <Copy className="h-4 w-4 mr-2" />
-                          Copy Summary
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            const blob = new Blob([summary], { type: "text/plain" })
-                            const blobUrl = URL.createObjectURL(blob)
-                            const a = document.createElement("a")
-                            a.href = blobUrl
-                            a.download = `${title || "summary"}_summary.txt`
-                            document.body.appendChild(a)
-                            a.click()
-                            document.body.removeChild(a)
-                            URL.revokeObjectURL(blobUrl)
-                            toast.success("Summary downloaded!")
-                          }}
-                        >
-                          <Download className="h-4 w-4 mr-2" />
-                          Download
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4">Content</h3>
+                  <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "transcript" | "summary")} className="w-full">
+                    <TabsList className="grid w-full grid-cols-2 bg-gray-100 border border-gray-200 mb-6 p-1">
+                      <TabsTrigger
+                        value="transcript"
+                        className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-gray-700"
+                      >
+                        <FileText className="h-4 w-4 mr-2" />
+                        {translatedText ? "Translated Transcript" : "Full Transcript"}
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="summary"
+                        className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-gray-700"
+                      >
+                        <Sparkles className="h-4 w-4 mr-2" />
+                        AI Summary
+                      </TabsTrigger>
+                    </TabsList>
+
+                    <TabsContent value="transcript">
+                      <Card className="bg-white border-gray-200 p-6">
+                        {displayText ? (
+                          <div className="max-h-[60vh] overflow-y-auto text-gray-700 text-sm leading-relaxed whitespace-pre-wrap break-words">
+                            {displayText}
+                          </div>
+                        ) : (
+                          <p className="text-sm text-gray-500">No transcript to display.</p>
+                        )}
+                      </Card>
+                    </TabsContent>
+
+                    <TabsContent value="summary">
+                      <Card className="bg-white border-gray-200 p-6">
+                        {summary ? (
+                          <div className="space-y-4">
+                            <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap break-words">
+                              {summary}
+                            </div>
+                            <div className="flex gap-2 flex-wrap">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  navigator.clipboard.writeText(summary)
+                                  toast.success("Summary copied to clipboard!")
+                                }}
+                              >
+                                <Copy className="h-4 w-4 mr-2" />
+                                Copy Summary
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => {
+                                  const blob = new Blob([summary], { type: "text/plain" })
+                                  const blobUrl = URL.createObjectURL(blob)
+                                  const a = document.createElement("a")
+                                  a.href = blobUrl
+                                  a.download = `${title || "summary"}_summary.txt`
+                                  document.body.appendChild(a)
+                                  a.click()
+                                  document.body.removeChild(a)
+                                  URL.revokeObjectURL(blobUrl)
+                                  toast.success("Summary downloaded!")
+                                }}
+                              >
+                                <Download className="h-4 w-4 mr-2" />
+                                Download
+                              </Button>
+                              <Button variant="ghost" size="sm" onClick={() => setSummary(null)}>
+                                Hide
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            <p className="text-sm text-gray-500">No summary yet. Click Summarize to generate one.</p>
+                            <Button onClick={handleSummarize} disabled={summarizing || !rawTranscript}>
+                              {summarizing ? (
+                                <>
+                                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                  Summarizing...
+                                </>
+                              ) : (
+                                <>
+                                  <Sparkles className="h-4 w-4 mr-2" />
+                                  Summarize
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                        )}
+                      </Card>
+                    </TabsContent>
+                  </Tabs>
+                </div>
               </div>
 
-              <div className="space-y-6">
-                <Card className="border-border/60">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base">Video details</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-3">
+              <div className="lg:col-span-1 space-y-6">
+                <Card className="bg-gray-50 border-gray-200 p-5">
+                  <h3 className="text-base font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-emerald-600" />
+                    Video Details
+                  </h3>
+                  <div className="space-y-4">
                     {metadata?.thumbnail_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={metadata.thumbnail_url}
                         alt="Video thumbnail"
-                        className="w-full rounded-lg border border-border/60 object-cover"
+                        className="w-full rounded-lg border border-gray-200 object-cover"
                       />
                     ) : null}
-                    <div className="space-y-1">
-                      <div className="text-sm font-medium">{metadata?.title || title || "—"}</div>
-                      <div className="text-sm text-muted-foreground">
-                        Channel:{" "}
+                    <div className="rounded-lg bg-white p-3 border border-gray-200">
+                      <p className="text-gray-500 text-xs font-medium uppercase tracking-wide mb-1">Title</p>
+                      <p className="text-gray-900 font-medium text-sm">{metadata?.title || title || "—"}</p>
+                    </div>
+                    <div className="rounded-lg bg-white p-3 border border-gray-200">
+                      <p className="text-gray-500 text-xs font-medium uppercase tracking-wide mb-1">Channel</p>
+                      <p className="text-gray-900 font-medium text-sm">
                         {metadata?.author_url ? (
                           <a
                             href={metadata.author_url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="underline underline-offset-2 hover:text-foreground"
+                            className="underline underline-offset-2 hover:text-gray-900"
                           >
                             {metadata?.author_name || "View channel"}
                           </a>
                         ) : (
                           metadata?.author_name || "—"
                         )}
-                      </div>
-                      <div className="text-xs text-muted-foreground">Language: {language || "—"}</div>
+                      </p>
                     </div>
-                  </CardContent>
+                    <div className="rounded-lg bg-white p-3 border border-gray-200">
+                      <p className="text-gray-500 text-xs font-medium uppercase tracking-wide mb-1">Language</p>
+                      <p className="text-gray-900 font-medium text-sm">{language || "—"}</p>
+                    </div>
+                  </div>
                 </Card>
 
-                <Card className="border-border/60">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-base">Tips</CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-sm text-muted-foreground space-y-2">
-                    <p>If a video has no transcript available, it may be disabled by the creator or restricted.</p>
-                    <p>Use "Include timestamps" to make quoting and navigation easier.</p>
-                  </CardContent>
+                <Card className="bg-emerald-50 border-emerald-200 p-5">
+                  <h3 className="text-base font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                    <FileText className="h-4 w-4 text-emerald-600" />
+                    Quick Tips
+                  </h3>
+                  <ul className="space-y-3">
+                    <li className="flex gap-2 text-gray-700 text-sm">
+                      <span className="text-emerald-600 flex-shrink-0 mt-1">→</span>
+                      <span>If a video has no transcript available, it may be disabled by the creator.</span>
+                    </li>
+                    <li className="flex gap-2 text-gray-700 text-sm">
+                      <span className="text-emerald-600 flex-shrink-0 mt-1">→</span>
+                      <span>Use translation to compare phrasing across languages.</span>
+                    </li>
+                    <li className="flex gap-2 text-gray-700 text-sm">
+                      <span className="text-emerald-600 flex-shrink-0 mt-1">→</span>
+                      <span>Summaries help you capture the main points quickly.</span>
+                    </li>
+                  </ul>
                 </Card>
               </div>
             </div>
