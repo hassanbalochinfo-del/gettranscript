@@ -6,10 +6,10 @@ import { prisma } from "@/lib/db"
 export const runtime = "nodejs"
 
 /**
- * AI Summarization endpoint - CREDITS REQUIRED
+ * AI Summarization endpoint - AVAILABLE TO ALL USERS
  * 
  * IMPORTANT: This endpoint does NOT deduct credits.
- * Summarization requires the user to have credits (balance > 0).
+ * Summarization is available to all logged-in users (no subscription or credits required).
  * Credits are ONLY deducted when generating transcripts via /api/transcribe.
  */
 export async function POST(req: NextRequest) {
@@ -35,12 +35,11 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Check user has credits
+    // Verify user exists (no subscription or credits check required)
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
       select: {
         id: true,
-        creditsBalance: true,
       },
     })
 
@@ -48,17 +47,6 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { ok: false, code: "USER_NOT_FOUND", error: "User not found." },
         { status: 404 }
-      )
-    }
-
-    if (user.creditsBalance <= 0) {
-      return NextResponse.json(
-        {
-          ok: false,
-          code: "INSUFFICIENT_CREDITS",
-          error: "You need credits to use the summarization feature. Please purchase a plan to get credits.",
-        },
-        { status: 403 }
       )
     }
 
