@@ -424,21 +424,24 @@ export default function ResultClient() {
           }))
         }
         
-        // Set title from metadata if available, otherwise use a descriptive fallback
-        const titleFromMeta = metadata?.title
-        if (titleFromMeta) {
-          setTitle(titleFromMeta)
+        // Set title from metadata if available - this is the source of truth
+        if (metadata?.title) {
+          setTitle(metadata.title)
         } else {
+          // Only use fallback if no metadata title
           const extracted = extractYouTubeVideoId(url)
           setTitle(extracted ? `Video Transcript • ${extracted}` : "Video Transcript")
         }
       } else {
         setError("Unexpected transcript format returned by server.")
+        isGeneratingRef.current = false
+        setLoading(false)
         return
       }
     } catch (e: any) {
       setError(e?.message || "Something went wrong.")
     } finally {
+      isGeneratingRef.current = false
       setLoading(false)
     }
   }
