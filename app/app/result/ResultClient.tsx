@@ -126,6 +126,45 @@ export default function ResultClient() {
     }
   }
 
+  const handleSummarize = async () => {
+    if (!rawTranscript || summarizing) return
+
+    setSummarizing(true)
+    setSummary(null)
+
+    try {
+      const res = await fetch("/api/ai/summarize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          transcript: rawTranscript,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        if (data.code === "SUBSCRIPTION_REQUIRED") {
+          toast.error("An active subscription is required to use summarization. Please upgrade your plan.")
+          router.push("/pricing")
+          return
+        }
+        throw new Error(data.error || "Failed to generate summary")
+      }
+
+      if (data.ok && data.summary) {
+        setSummary(data.summary)
+        toast.success("Summary generated successfully!")
+      } else {
+        throw new Error("Invalid response from server")
+      }
+    } catch (error: any) {
+      toast.error(error.message || "Failed to generate summary")
+    } finally {
+      setSummarizing(false)
+    }
+  }
+
   // Check subscription status on mount
   useEffect(() => {
     const checkSubscription = async () => {
