@@ -516,26 +516,25 @@ export default function ResultClient() {
                       </Button>
                     )}
                   </div>
-                  {hasActiveSubscription && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleSummarize}
-                      disabled={summarizing || !rawTranscript}
-                    >
-                      {summarizing ? (
-                        <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Summarizing...
-                        </>
-                      ) : (
-                        <>
-                          <FileText className="h-4 w-4 mr-2" />
-                          Summarize
-                        </>
-                      )}
-                    </Button>
-                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleSummarize}
+                    disabled={summarizing || !rawTranscript || hasActiveSubscription === false}
+                    title={hasActiveSubscription === false ? "An active subscription is required to use summarization" : undefined}
+                  >
+                    {summarizing ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Summarizing...
+                      </>
+                    ) : (
+                      <>
+                        <FileText className="h-4 w-4 mr-2" />
+                        Summarize
+                      </>
+                    )}
+                  </Button>
                 </>
               )}
               <Button variant="outline" size="sm" onClick={handleCopy} disabled={!displayText}>
