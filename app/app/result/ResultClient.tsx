@@ -452,9 +452,6 @@ export default function ResultClient() {
 
     fetchMeta()
   }, [url, metadata, metaFetched, title])
-
-  // Function to generate transcript (only called when user clicks button)
-  const handleGenerateTranscript = async () => {
     if (!url) {
       toast.error("Please enter a YouTube URL")
       return
