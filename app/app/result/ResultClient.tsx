@@ -8,7 +8,7 @@ import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { toast } from "sonner"
-import { ArrowLeft, Check, Copy, Download, Loader2, Languages } from "lucide-react"
+import { ArrowLeft, Check, Copy, Download, Loader2, Languages, FileText } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 type TranscriptMetadata = {
@@ -80,6 +80,9 @@ export default function ResultClient() {
   const [translatedText, setTranslatedText] = useState<string | null>(null)
   const [translating, setTranslating] = useState(false)
   const [selectedLanguage, setSelectedLanguage] = useState<string>("")
+  const [summary, setSummary] = useState<string | null>(null)
+  const [summarizing, setSummarizing] = useState(false)
+  const [hasActiveSubscription, setHasActiveSubscription] = useState<boolean | null>(null)
 
   const displayText = useMemo(() => {
     return translatedText || rawTranscript || ""
@@ -122,6 +125,23 @@ export default function ResultClient() {
       setTranslating(false)
     }
   }
+
+  // Check subscription status on mount
+  useEffect(() => {
+    const checkSubscription = async () => {
+      try {
+        const res = await fetch("/api/me")
+        if (res.ok) {
+          const data = await res.json()
+          setHasActiveSubscription(data.subscription?.status === "active")
+        }
+      } catch {
+        // If check fails, assume no subscription (will show upgrade prompt)
+        setHasActiveSubscription(false)
+      }
+    }
+    checkSubscription()
+  }, [])
 
   // Load transcript from cache (localStorage) or URL params (no API call, no charge)
   useEffect(() => {
@@ -419,43 +439,65 @@ export default function ResultClient() {
 
             <div className="flex items-center gap-2 flex-wrap">
               {rawTranscript && (
-                <div className="flex items-center gap-2">
-                  <Select
-                    value={selectedLanguage}
-                    onValueChange={handleTranslate}
-                    disabled={translating}
-                  >
-                    <SelectTrigger className="w-[160px]">
-                      <SelectValue placeholder={<><Languages className="h-4 w-4 mr-2 inline" />Translate</>} />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="es">🇪🇸 Spanish</SelectItem>
-                      <SelectItem value="fr">🇫🇷 French</SelectItem>
-                      <SelectItem value="de">🇩🇪 German</SelectItem>
-                      <SelectItem value="it">🇮🇹 Italian</SelectItem>
-                      <SelectItem value="pt">🇵🇹 Portuguese</SelectItem>
-                      <SelectItem value="ru">🇷🇺 Russian</SelectItem>
-                      <SelectItem value="ja">🇯🇵 Japanese</SelectItem>
-                      <SelectItem value="ko">🇰🇷 Korean</SelectItem>
-                      <SelectItem value="zh">🇨🇳 Chinese</SelectItem>
-                      <SelectItem value="ar">🇸🇦 Arabic</SelectItem>
-                      <SelectItem value="hi">🇮🇳 Hindi</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {translating && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
-                  {translatedText && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setTranslatedText(null)
-                        setSelectedLanguage("")
-                      }}
+                <>
+                  <div className="flex items-center gap-2">
+                    <Select
+                      value={selectedLanguage}
+                      onValueChange={handleTranslate}
+                      disabled={translating}
                     >
-                      Show Original
+                      <SelectTrigger className="w-[160px]">
+                        <SelectValue placeholder={<><Languages className="h-4 w-4 mr-2 inline" />Translate</>} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="es">🇪🇸 Spanish</SelectItem>
+                        <SelectItem value="fr">🇫🇷 French</SelectItem>
+                        <SelectItem value="de">🇩🇪 German</SelectItem>
+                        <SelectItem value="it">🇮🇹 Italian</SelectItem>
+                        <SelectItem value="pt">🇵🇹 Portuguese</SelectItem>
+                        <SelectItem value="ru">🇷🇺 Russian</SelectItem>
+                        <SelectItem value="ja">🇯🇵 Japanese</SelectItem>
+                        <SelectItem value="ko">🇰🇷 Korean</SelectItem>
+                        <SelectItem value="zh">🇨🇳 Chinese</SelectItem>
+                        <SelectItem value="ar">🇸🇦 Arabic</SelectItem>
+                        <SelectItem value="hi">🇮🇳 Hindi</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    {translating && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}
+                    {translatedText && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setTranslatedText(null)
+                          setSelectedLanguage("")
+                        }}
+                      >
+                        Show Original
+                      </Button>
+                    )}
+                  </div>
+                  {hasActiveSubscription && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleSummarize}
+                      disabled={summarizing || !rawTranscript}
+                    >
+                      {summarizing ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Summarizing...
+                        </>
+                      ) : (
+                        <>
+                          <FileText className="h-4 w-4 mr-2" />
+                          Summarize
+                        </>
+                      )}
                     </Button>
                   )}
-                </div>
+                </>
               )}
               <Button variant="outline" size="sm" onClick={handleCopy} disabled={!displayText}>
                 {copied ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
@@ -561,6 +603,65 @@ export default function ResultClient() {
                     )}
                   </CardContent>
                 </Card>
+
+                {summary && (
+                  <Card className="border-primary/40 bg-primary/5">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-base flex items-center gap-2">
+                          <FileText className="h-5 w-5 text-primary" />
+                          Video Summary
+                        </CardTitle>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSummary(null)}
+                        >
+                          Hide
+                        </Button>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="rounded-lg border border-primary/20 bg-background p-6">
+                        <p className="text-sm leading-relaxed whitespace-pre-wrap break-words text-foreground">
+                          {summary}
+                        </p>
+                      </div>
+                      <div className="mt-4 flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            navigator.clipboard.writeText(summary)
+                            toast.success("Summary copied to clipboard!")
+                          }}
+                        >
+                          <Copy className="h-4 w-4 mr-2" />
+                          Copy Summary
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            const blob = new Blob([summary], { type: "text/plain" })
+                            const blobUrl = URL.createObjectURL(blob)
+                            const a = document.createElement("a")
+                            a.href = blobUrl
+                            a.download = `${title || "summary"}_summary.txt`
+                            document.body.appendChild(a)
+                            a.click()
+                            document.body.removeChild(a)
+                            URL.revokeObjectURL(blobUrl)
+                            toast.success("Summary downloaded!")
+                          }}
+                        >
+                          <Download className="h-4 w-4 mr-2" />
+                          Download
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
 
               <div className="space-y-6">
