@@ -61,53 +61,110 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Generate summary using OpenAI
-    const prompt = `You are a professional video content summarizer. Create a comprehensive, well-structured summary of the following video transcript.
+    // Generate summary using OpenAI with retry logic and fallback
+    const generateSummary = async (model: string, retryCount = 0): Promise<{ summary: string } | { error: string }> => {
+      const prompt = `You are a professional video content summarizer. Create a clear, well-structured summary of the following video transcript.
 
-Requirements:
-1. Start with a brief introduction (1-2 sentences) about what the video covers
-2. List the main points discussed in a clear, organized manner
-3. Include key takeaways and insights
-4. End with a conclusion that captures the overall message and purpose of the video
-5. Write in a professional, engaging tone
-6. Use clear paragraphs and proper formatting
-7. Make it comprehensive but concise (aim for 200-400 words)
+STRUCTURE YOUR SUMMARY AS FOLLOWS:
+
+1. **Introduction** (1-2 sentences)
+   - Briefly state what the video is about and its main topic
+
+2. **Main Points** (3-5 bullet points or short paragraphs)
+   - Identify and explain the key points discussed
+   - Use clear, concise language
+   - Focus on the most important information
+
+3. **Key Takeaways** (2-3 sentences)
+   - Highlight the most valuable insights or lessons
+   - What should the viewer remember?
+
+4. **Conclusion** (1-2 sentences)
+   - Summarize the overall message or purpose
+   - What is the main takeaway?
+
+GUIDELINES:
+- Write in a clear, professional, and easy-to-read style
+- Use proper paragraph breaks for readability
+- Be specific and accurate - base everything on the transcript
+- Aim for 250-400 words total
+- Make it scannable - use formatting that helps readers quickly understand the content
+- Focus on clarity and consistency
 
 Transcript:
 ${transcript}
 
 Summary:`
 
-    const openaiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are a professional content summarizer. Create clear, comprehensive summaries that capture the essence, main points, and key takeaways of video content.",
+      try {
+        const openaiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${apiKey}`,
           },
-          {
-            role: "user",
-            content: prompt,
-          },
-        ],
-        temperature: 0.7,
-        max_tokens: 1000,
-      }),
-    })
+          body: JSON.stringify({
+            model: model,
+            messages: [
+              {
+                role: "system",
+                content:
+                  "You are a professional content summarizer. Create clear, well-structured summaries that help readers quickly understand video content. Use consistent formatting and clear language.",
+              },
+              {
+                role: "user",
+                content: prompt,
+              },
+            ],
+            temperature: 0.5, // Lower temperature for more consistent results
+            max_tokens: 1200, // Increased for better summaries
+          }),
+        })
 
-    if (!openaiResponse.ok) {
-      const errorData = await openaiResponse.json().catch(() => ({}))
-      console.error("OpenAI API error:", errorData)
+        if (!openaiResponse.ok) {
+          const errorData = await openaiResponse.json().catch(() => ({}))
+          const errorMessage = errorData?.error?.message || ""
+          
+          // Handle rate limit - retry with fallback model or wait
+          if ((errorMessage.includes("Rate limit") || errorMessage.includes("rate_limit")) && retryCount === 0) {
+            // Try with gpt-3.5-turbo as fallback (usually has higher rate limits)
+            if (model === "gpt-4o-mini") {
+              console.log("Rate limit hit on gpt-4o-mini, trying gpt-3.5-turbo fallback")
+              return generateSummary("gpt-3.5-turbo", 1)
+            }
+          }
+          
+          throw new Error(errorMessage || "OpenAI API error")
+        }
+
+        const openaiData = await openaiResponse.json()
+        const summary = openaiData?.choices?.[0]?.message?.content?.trim() || ""
+
+        if (!summary) {
+          throw new Error("Empty summary returned")
+        }
+
+        return { summary }
+      } catch (error: any) {
+        const errorMessage = error?.message || "Unknown error"
+        
+        // If rate limit and we haven't tried fallback yet
+        if (errorMessage.includes("Rate limit") && retryCount === 0 && model === "gpt-4o-mini") {
+          console.log("Rate limit error, trying gpt-3.5-turbo fallback")
+          return generateSummary("gpt-3.5-turbo", 1)
+        }
+        
+        return { error: errorMessage }
+      }
+    }
+
+    // Try with gpt-4o-mini first, fallback to gpt-3.5-turbo if rate limited
+    const result = await generateSummary("gpt-4o-mini")
+    
+    if ("error" in result) {
+      const errorMessage = result.error
       
       // Handle rate limit errors specifically
-      const errorMessage = errorData?.error?.message || ""
       if (errorMessage.includes("Rate limit") || errorMessage.includes("rate_limit")) {
         return NextResponse.json(
           {
@@ -129,15 +186,8 @@ Summary:`
       )
     }
 
-    const openaiData = await openaiResponse.json()
-    const summary = openaiData?.choices?.[0]?.message?.content?.trim() || ""
+    const summary = result.summary
 
-    if (!summary) {
-      return NextResponse.json(
-        { ok: false, code: "EMPTY_SUMMARY", error: "Failed to generate summary. Please try again." },
-        { status: 500 }
-      )
-    }
 
     return NextResponse.json({
       ok: true,

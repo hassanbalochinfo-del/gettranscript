@@ -333,16 +333,21 @@ export async function POST(req: NextRequest) {
     
     if (openaiKey && plainText.trim()) {
       try {
-        const prompt = `You are a professional transcript editor. Improve the following transcript for readability:
-- Fix grammar and spelling errors
-- Add proper punctuation
-- Improve sentence structure and flow
-- Maintain the original meaning and tone
-- Keep the text natural and conversational
-- Format as a clean, readable paragraph
-- Do not change technical terms or proper nouns unless they are misspelled
+        const prompt = `You are a professional transcript editor. Clean up this transcript while preserving its original structure and conversational style.
 
-Return ONLY the polished transcript text as a single clean paragraph, nothing else.
+CRITICAL RULES:
+- Fix obvious spelling mistakes and typos (e.g., "teh" → "the", "recieve" → "receive")
+- Fix grammar errors (subject-verb agreement, verb tenses, etc.)
+- Add missing punctuation (periods, commas, question marks)
+- Fix common speech-to-text errors (e.g., "um", "uh" can be removed if excessive)
+- Keep the transcript format - do NOT rewrite as an essay or formal document
+- Maintain the natural, conversational flow and tone
+- Preserve all technical terms, names, and proper nouns exactly as spoken (unless clearly misspelled)
+- Keep the original sentence structure - only fix mistakes, don't rewrite for style
+- Do not add information that wasn't in the original
+- Return the cleaned transcript as a continuous paragraph, preserving the natural flow
+
+Return ONLY the cleaned transcript text, nothing else.
 
 Transcript:
 ${plainText}`
@@ -355,21 +360,22 @@ ${plainText}`
           },
           body: JSON.stringify({
             model: "gpt-4o-mini",
-            temperature: 0.3,
+            temperature: 0.2, // Lower temperature for more consistent, conservative edits
             messages: [
               {
                 role: "system",
-                content: "You are a professional transcript editor. Return only the polished text as a clean paragraph.",
+                content: "You are a careful transcript editor. Fix mistakes and errors while preserving the original transcript's structure, tone, and content. Return only the cleaned text.",
               },
               { role: "user", content: prompt },
             ],
+            max_tokens: Math.min(Math.ceil(plainText.length * 1.2), 4000), // Allow some growth but cap it
           }),
         })
 
         if (polishResponse.ok) {
           const polishData = await polishResponse.json()
           const polished = polishData?.choices?.[0]?.message?.content?.trim()
-          if (polished) {
+          if (polished && polished.length > 0) {
             polishedText = polished
             isPolished = true
           }
@@ -377,6 +383,7 @@ ${plainText}`
       } catch (error) {
         // If polishing fails, continue with original transcript
         // Silently fail - polishing is enhancement, not required
+        console.error("Polishing error:", error)
       }
     }
 
