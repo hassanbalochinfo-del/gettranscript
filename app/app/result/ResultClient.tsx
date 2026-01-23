@@ -171,27 +171,58 @@ export default function ResultClient() {
 
   // Load transcript from cache (localStorage) or URL params (no API call, no charge)
   useEffect(() => {
+    // Prevent running if we're already loading or have an error from a previous attempt
+    if (loading) return
+
     // First priority: URL params (if transcript was just generated)
     if (transcriptParam) {
       const transcript = decodeURIComponent(transcriptParam)
       setRawTranscript(transcript)
-      setTitle(titleParam ? decodeURIComponent(titleParam) : "Transcript")
+      
+      // Set title from titleParam if available, otherwise keep existing title or use metadata
+      if (titleParam) {
+        setTitle(decodeURIComponent(titleParam))
+      }
       
       // Also cache it in localStorage for future visits
       if (url) {
         const videoId = extractYouTubeVideoId(url)
         if (videoId) {
           const cacheKey = `transcript_${videoId}`
+          // Try to get existing cache to preserve metadata
+          const existingCache = localStorage.getItem(cacheKey)
+          let cachedData: any = {}
+          if (existingCache) {
+            try {
+              cachedData = JSON.parse(existingCache)
+            } catch {}
+          }
+          
           localStorage.setItem(cacheKey, JSON.stringify({
             transcript,
-            title: titleParam ? decodeURIComponent(titleParam) : null,
+            title: titleParam ? decodeURIComponent(titleParam) : (cachedData.title || null),
+            videoId: cachedData.videoId || videoId,
+            language: cachedData.language || "",
+            metadata: cachedData.metadata || null,
             url,
             timestamp: Date.now(),
           }))
+          
+          // Restore metadata if available in cache
+          if (cachedData.metadata) {
+            setMetadata(cachedData.metadata)
+          }
+          if (cachedData.videoId) {
+            setVideoId(cachedData.videoId)
+          }
+          if (cachedData.language) {
+            setLanguage(cachedData.language)
+          }
         }
       }
       
       setLoading(false)
+      setError(null)
       return
     }
 
@@ -216,6 +247,7 @@ export default function ResultClient() {
               if (data.language) setLanguage(data.language)
               if (data.metadata) setMetadata(data.metadata)
               setLoading(false)
+              setError(null)
               return
             } else {
               // Cache expired, remove it
@@ -327,7 +359,10 @@ export default function ResultClient() {
 
       setVideoId(String(data.videoId || ""))
       setLanguage(String(data.language || ""))
-      setMetadata((data.metadata as TranscriptMetadata) ?? null)
+      
+      // Set metadata FIRST before setting title
+      const metadata = (data.metadata as TranscriptMetadata) ?? null
+      setMetadata(metadata)
 
       // Always expect plain text transcript (no segments, no timestamps)
       if (typeof data.transcript === "string") {
@@ -339,32 +374,35 @@ export default function ResultClient() {
           const cacheKey = `transcript_${videoId}`
           localStorage.setItem(cacheKey, JSON.stringify({
             transcript: data.transcript,
-            title: data.metadata?.title || null,
+            title: metadata?.title || null,
             videoId: String(data.videoId || videoId),
             language: String(data.language || ""),
-            metadata: data.metadata || null,
+            metadata: metadata,
             url,
             timestamp: Date.now(),
           }))
         }
         
-        // Update URL with transcript param (optional, for sharing)
+        // Set title from metadata if available, otherwise use a descriptive fallback
+        const titleFromMeta = metadata?.title
+        if (titleFromMeta) {
+          setTitle(titleFromMeta)
+        } else {
+          const extracted = extractYouTubeVideoId(url)
+          setTitle(extracted ? `Video Transcript • ${extracted}` : "Video Transcript")
+        }
+        
+        // Update URL with transcript param (optional, for sharing) - but don't trigger reload
         const newUrl = new URL(window.location.href)
         newUrl.searchParams.set("transcript", encodeURIComponent(data.transcript))
-        if (data.metadata?.title) {
-          newUrl.searchParams.set("title", encodeURIComponent(data.metadata.title))
+        if (metadata?.title) {
+          newUrl.searchParams.set("title", encodeURIComponent(metadata.title))
         }
+        // Use replaceState to avoid triggering navigation/reload
         window.history.replaceState({}, "", newUrl.toString())
       } else {
         setError("Unexpected transcript format returned by server.")
         return
-      }
-
-      const titleFromMeta = (data.metadata?.title as string | undefined) ?? null
-      if (titleFromMeta) setTitle(titleFromMeta)
-      else {
-        const extracted = extractYouTubeVideoId(url)
-        setTitle(extracted ? `Transcript • ${extracted}` : "Transcript")
       }
     } catch (e: any) {
       setError(e?.message || "Something went wrong.")
@@ -709,9 +747,6 @@ export default function ResultClient() {
                               >
                                 <Download className="h-4 w-4 mr-2" />
                                 Download
-                              </Button>
-                              <Button variant="ghost" size="sm" onClick={() => setSummary(null)}>
-                                Hide
                               </Button>
                             </div>
                           </div>
