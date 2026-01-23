@@ -82,7 +82,7 @@ export default function ResultClient() {
   const [selectedLanguage, setSelectedLanguage] = useState<string>("")
   const [summary, setSummary] = useState<string | null>(null)
   const [summarizing, setSummarizing] = useState(false)
-  const [hasActiveSubscription, setHasActiveSubscription] = useState<boolean | null>(null)
+  const [hasCredits, setHasCredits] = useState<boolean | null>(null)
 
   const displayText = useMemo(() => {
     return translatedText || rawTranscript || ""
@@ -144,8 +144,8 @@ export default function ResultClient() {
       const data = await res.json()
 
       if (!res.ok) {
-        if (data.code === "SUBSCRIPTION_REQUIRED") {
-          toast.error("An active subscription is required to use summarization. Please upgrade your plan.")
+        if (data.code === "INSUFFICIENT_CREDITS") {
+          toast.error("You need credits to use summarization. Please purchase a plan to get credits.")
           router.push("/pricing")
           return
         }
@@ -165,21 +165,21 @@ export default function ResultClient() {
     }
   }
 
-  // Check subscription status on mount
+  // Check credits on mount
   useEffect(() => {
-    const checkSubscription = async () => {
+    const checkCredits = async () => {
       try {
         const res = await fetch("/api/me")
         if (res.ok) {
           const data = await res.json()
-          setHasActiveSubscription(data.subscription?.status === "active")
+          setHasCredits((data.user?.creditsBalance || 0) > 0)
         }
       } catch {
-        // If check fails, assume no subscription (will show upgrade prompt)
-        setHasActiveSubscription(false)
+        // If check fails, assume no credits (will show upgrade prompt)
+        setHasCredits(false)
       }
     }
-    checkSubscription()
+    checkCredits()
   }, [])
 
   // Load transcript from cache (localStorage) or URL params (no API call, no charge)
@@ -520,8 +520,8 @@ export default function ResultClient() {
                     variant="outline"
                     size="sm"
                     onClick={handleSummarize}
-                    disabled={summarizing || !rawTranscript || hasActiveSubscription === false}
-                    title={hasActiveSubscription === false ? "An active subscription is required to use summarization" : undefined}
+                    disabled={summarizing || !rawTranscript || hasCredits === false}
+                    title={hasCredits === false ? "You need credits to use summarization. Please purchase a plan to get credits." : undefined}
                   >
                     {summarizing ? (
                       <>

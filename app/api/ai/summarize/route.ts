@@ -6,10 +6,10 @@ import { prisma } from "@/lib/db"
 export const runtime = "nodejs"
 
 /**
- * AI Summarization endpoint - SUBSCRIPTION REQUIRED
+ * AI Summarization endpoint - CREDITS REQUIRED
  * 
  * IMPORTANT: This endpoint does NOT deduct credits.
- * Summarization is a subscription feature (requires active subscription).
+ * Summarization requires the user to have credits (balance > 0).
  * Credits are ONLY deducted when generating transcripts via /api/transcribe.
  */
 export async function POST(req: NextRequest) {
@@ -35,19 +35,12 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Check subscription status
+    // Check user has credits
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      include: {
-        subscriptions: {
-          where: {
-            status: "active",
-          },
-          orderBy: {
-            createdAt: "desc",
-          },
-          take: 1,
-        },
+      select: {
+        id: true,
+        creditsBalance: true,
       },
     })
 
@@ -58,13 +51,12 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    const hasActiveSubscription = user.subscriptions.length > 0
-    if (!hasActiveSubscription) {
+    if (user.creditsBalance <= 0) {
       return NextResponse.json(
         {
           ok: false,
-          code: "SUBSCRIPTION_REQUIRED",
-          error: "An active subscription is required to use the summarization feature. Please upgrade your plan.",
+          code: "INSUFFICIENT_CREDITS",
+          error: "You need credits to use the summarization feature. Please purchase a plan to get credits.",
         },
         { status: 403 }
       )
