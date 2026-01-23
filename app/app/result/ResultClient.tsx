@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState, useRef } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Navbar } from "@/components/navbar"
@@ -86,6 +86,7 @@ export default function ResultClient() {
   const [activeTab, setActiveTab] = useState<"transcript" | "summary">("transcript")
   const [needsGenerate, setNeedsGenerate] = useState(false)
   const [metaFetched, setMetaFetched] = useState(false)
+  const isGeneratingRef = useRef(false)
 
   const displayText = useMemo(() => {
     return translatedText || rawTranscript || ""
@@ -173,7 +174,7 @@ export default function ResultClient() {
 
   // Load transcript from cache (localStorage) or URL params (no API call, no charge)
   useEffect(() => {
-    if (loading) return
+    if (loading || isGeneratingRef.current) return
     if (rawTranscript) {
       setNeedsGenerate(false)
       return
@@ -312,6 +313,10 @@ export default function ResultClient() {
       return
     }
 
+    if (isGeneratingRef.current) {
+      return // Prevent double clicks
+    }
+
     if (isYouTubeChannelUrl(url)) {
       setError("Please paste a YouTube video link, not a channel link.\n\nTip: open a video from the channel and paste that video URL.")
       return
@@ -332,10 +337,15 @@ export default function ResultClient() {
           if (cacheAge < maxAge && data.transcript) {
             // Use cached transcript (no API call, no charge)
             setRawTranscript(data.transcript)
-            if (data.title) setTitle(data.title)
+            if (data.metadata) {
+              setMetadata(data.metadata)
+              if (data.metadata?.title) setTitle(data.metadata.title)
+            } else if (data.title) {
+              setTitle(data.title)
+            }
             if (data.videoId) setVideoId(data.videoId)
             if (data.language) setLanguage(data.language)
-            if (data.metadata) setMetadata(data.metadata)
+            setNeedsGenerate(false)
             toast.success("Loaded cached transcript")
             return
           } else {
@@ -348,15 +358,11 @@ export default function ResultClient() {
       }
     }
 
+    isGeneratingRef.current = true
     setLoading(true)
     setNeedsGenerate(false)
     setError(null)
-    setRawTranscript("")
-    setTitle("")
-    setVideoId("")
-    setLanguage("")
-    setMetadata(null)
-    setTranslatedText(null)
+    // Don't clear transcript/title/metadata yet - keep them until we have new data
 
     try {
       const res = await fetch("/api/transcribe", {
