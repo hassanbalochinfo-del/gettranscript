@@ -87,6 +87,11 @@ export default function ResultClient() {
   const [needsGenerate, setNeedsGenerate] = useState(false)
   const [metaFetched, setMetaFetched] = useState(false)
   const isGeneratingRef = useRef(false)
+  const metadataRef = useRef<TranscriptMetadata | null>(null)
+
+  useEffect(() => {
+    metadataRef.current = metadata
+  }, [metadata])
 
   const displayText = useMemo(() => {
     return translatedText || rawTranscript || ""
@@ -269,11 +274,29 @@ export default function ResultClient() {
       }
 
       setVideoId(String(data.videoId || ""))
-      setLanguage(String(data.language || ""))
+      if (data.language) {
+        setLanguage(String(data.language))
+      }
 
-      // Set metadata FIRST before setting title
-      const metadata = (data.metadata as TranscriptMetadata) ?? null
-      setMetadata(metadata)
+      // Merge response metadata with any existing metadata (do not overwrite with nulls)
+      const prevMeta = metadataRef.current ?? {}
+      const responseMeta = (data.metadata as TranscriptMetadata) ?? {}
+      const mergedMeta: TranscriptMetadata = {
+        title: responseMeta.title ?? prevMeta.title ?? null,
+        author_name: responseMeta.author_name ?? prevMeta.author_name ?? null,
+        author_url: responseMeta.author_url ?? prevMeta.author_url ?? null,
+        thumbnail_url: responseMeta.thumbnail_url ?? prevMeta.thumbnail_url ?? null,
+      }
+
+      const hasMergedMeta =
+        Boolean(mergedMeta.title) ||
+        Boolean(mergedMeta.author_name) ||
+        Boolean(mergedMeta.author_url) ||
+        Boolean(mergedMeta.thumbnail_url)
+
+      if (hasMergedMeta) {
+        setMetadata(mergedMeta)
+      }
 
       // Always expect plain text transcript (no segments, no timestamps)
       if (typeof data.transcript === "string") {
@@ -285,19 +308,19 @@ export default function ResultClient() {
           const cacheKey = `transcript_${videoId}`
           localStorage.setItem(cacheKey, JSON.stringify({
             transcript: data.transcript,
-            title: metadata?.title || null,
+            title: mergedMeta.title || null,
             videoId: String(data.videoId || videoId),
-            language: String(data.language || ""),
-            metadata: metadata,
+            language: String(data.language || "") || (prevMeta as any).language || "",
+            metadata: hasMergedMeta ? mergedMeta : (metadataRef.current ?? null),
             url,
             timestamp: Date.now(),
           }))
         }
         
         // Set title from metadata if available - this is the source of truth
-        if (metadata?.title) {
-          setTitle(metadata.title)
-        } else {
+        if (mergedMeta.title) {
+          setTitle(mergedMeta.title)
+        } else if (!title) {
           // Only use fallback if no metadata title
           const extracted = extractYouTubeVideoId(url)
           setTitle(extracted ? `Video Transcript • ${extracted}` : "Video Transcript")
@@ -314,7 +337,7 @@ export default function ResultClient() {
       isGeneratingRef.current = false
       setLoading(false)
     }
-  }, [url])
+  }, [url, title])
 
 
 
@@ -440,7 +463,7 @@ export default function ResultClient() {
           thumbnail_url: data?.thumbnail_url || null,
         }
         setMetadata(meta)
-        if (!title && meta.title) {
+        if (meta.title && (!title || title.startsWith("Video Transcript"))) {
           setTitle(meta.title)
         }
       } catch {
