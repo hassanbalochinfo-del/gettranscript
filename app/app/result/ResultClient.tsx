@@ -84,6 +84,8 @@ export default function ResultClient() {
   const [summary, setSummary] = useState<string | null>(null)
   const [summarizing, setSummarizing] = useState(false)
   const [activeTab, setActiveTab] = useState<"transcript" | "summary">("transcript")
+  const [needsGenerate, setNeedsGenerate] = useState(false)
+  const [metaFetched, setMetaFetched] = useState(false)
 
   const displayText = useMemo(() => {
     return translatedText || rawTranscript || ""
@@ -171,25 +173,25 @@ export default function ResultClient() {
 
   // Load transcript from cache (localStorage) or URL params (no API call, no charge)
   useEffect(() => {
-    // Prevent running if we're already loading or have an error from a previous attempt
     if (loading) return
+    if (rawTranscript) {
+      setNeedsGenerate(false)
+      return
+    }
 
-    // First priority: URL params (if transcript was just generated)
+    // First priority: URL params (legacy share links)
     if (transcriptParam) {
       const transcript = decodeURIComponent(transcriptParam)
       setRawTranscript(transcript)
-      
-      // Set title from titleParam if available, otherwise keep existing title or use metadata
+
       if (titleParam) {
         setTitle(decodeURIComponent(titleParam))
       }
-      
-      // Also cache it in localStorage for future visits
+
       if (url) {
         const videoId = extractYouTubeVideoId(url)
         if (videoId) {
           const cacheKey = `transcript_${videoId}`
-          // Try to get existing cache to preserve metadata
           const existingCache = localStorage.getItem(cacheKey)
           let cachedData: any = {}
           if (existingCache) {
@@ -197,30 +199,29 @@ export default function ResultClient() {
               cachedData = JSON.parse(existingCache)
             } catch {}
           }
-          
+
           localStorage.setItem(cacheKey, JSON.stringify({
             transcript,
-            title: titleParam ? decodeURIComponent(titleParam) : (cachedData.title || null),
+            title: titleParam ? decodeURIComponent(titleParam) : (cachedData.title || cachedData.metadata?.title || null),
             videoId: cachedData.videoId || videoId,
             language: cachedData.language || "",
             metadata: cachedData.metadata || null,
             url,
             timestamp: Date.now(),
           }))
-          
-          // Restore metadata if available in cache
+
           if (cachedData.metadata) {
             setMetadata(cachedData.metadata)
+            if (cachedData.metadata?.title) setTitle(cachedData.metadata.title)
+          } else if (cachedData.title) {
+            setTitle(cachedData.title)
           }
-          if (cachedData.videoId) {
-            setVideoId(cachedData.videoId)
-          }
-          if (cachedData.language) {
-            setLanguage(cachedData.language)
-          }
+          if (cachedData.videoId) setVideoId(cachedData.videoId)
+          if (cachedData.language) setLanguage(cachedData.language)
         }
       }
-      
+
+      setNeedsGenerate(false)
       setLoading(false)
       setError(null)
       return
@@ -232,44 +233,77 @@ export default function ResultClient() {
       if (videoId) {
         const cacheKey = `transcript_${videoId}`
         const cached = localStorage.getItem(cacheKey)
-        
+
         if (cached) {
           try {
             const data = JSON.parse(cached)
-            // Cache is valid for 24 hours
             const cacheAge = Date.now() - (data.timestamp || 0)
             const maxAge = 24 * 60 * 60 * 1000 // 24 hours
-            
+
             if (cacheAge < maxAge && data.transcript) {
               setRawTranscript(data.transcript)
-              if (data.title) setTitle(data.title)
+              if (data.metadata) {
+                setMetadata(data.metadata)
+                if (data.metadata?.title) setTitle(data.metadata.title)
+              } else if (data.title) {
+                setTitle(data.title)
+              }
               if (data.videoId) setVideoId(data.videoId)
               if (data.language) setLanguage(data.language)
-              if (data.metadata) setMetadata(data.metadata)
+              setNeedsGenerate(false)
               setLoading(false)
               setError(null)
               return
             } else {
-              // Cache expired, remove it
               localStorage.removeItem(cacheKey)
             }
           } catch {
-            // Invalid cache, remove it
             localStorage.removeItem(cacheKey)
           }
         }
       }
     }
 
-    // If URL is provided but no cached transcript, show message to generate
+    // If URL is provided but no cached transcript, show prompt to generate
     if (url && !transcriptParam) {
-      setError("Click 'Get Transcript' to generate the transcript for this video.")
+      setNeedsGenerate(true)
+      setError(null)
       setLoading(false)
     } else if (!url && !transcriptParam) {
+      setNeedsGenerate(false)
       setError("No URL provided. Please go back and paste a YouTube video link.")
       setLoading(false)
     }
-  }, [url, transcriptParam, titleParam])
+  }, [url, transcriptParam, titleParam, loading, rawTranscript])
+
+  // Fallback metadata fetch (oEmbed) when transcript metadata is missing
+  useEffect(() => {
+    if (!url || metadata || metaFetched) return
+
+    const fetchMeta = async () => {
+      try {
+        const res = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`)
+        if (!res.ok) return
+        const data = await res.json()
+        const meta: TranscriptMetadata = {
+          title: data?.title || null,
+          author_name: data?.author_name || null,
+          author_url: data?.author_url || null,
+          thumbnail_url: data?.thumbnail_url || null,
+        }
+        setMetadata(meta)
+        if (!title && meta.title) {
+          setTitle(meta.title)
+        }
+      } catch {
+        // Ignore metadata errors
+      } finally {
+        setMetaFetched(true)
+      }
+    }
+
+    fetchMeta()
+  }, [url, metadata, metaFetched, title])
 
   // Function to generate transcript (only called when user clicks button)
   const handleGenerateTranscript = async () => {
@@ -315,6 +349,7 @@ export default function ResultClient() {
     }
 
     setLoading(true)
+    setNeedsGenerate(false)
     setError(null)
     setRawTranscript("")
     setTitle("")
@@ -359,7 +394,7 @@ export default function ResultClient() {
 
       setVideoId(String(data.videoId || ""))
       setLanguage(String(data.language || ""))
-      
+
       // Set metadata FIRST before setting title
       const metadata = (data.metadata as TranscriptMetadata) ?? null
       setMetadata(metadata)
@@ -391,15 +426,6 @@ export default function ResultClient() {
           const extracted = extractYouTubeVideoId(url)
           setTitle(extracted ? `Video Transcript • ${extracted}` : "Video Transcript")
         }
-        
-        // Update URL with transcript param (optional, for sharing) - but don't trigger reload
-        const newUrl = new URL(window.location.href)
-        newUrl.searchParams.set("transcript", encodeURIComponent(data.transcript))
-        if (metadata?.title) {
-          newUrl.searchParams.set("title", encodeURIComponent(metadata.title))
-        }
-        // Use replaceState to avoid triggering navigation/reload
-        window.history.replaceState({}, "", newUrl.toString())
       } else {
         setError("Unexpected transcript format returned by server.")
         return
@@ -492,7 +518,7 @@ export default function ResultClient() {
           </div>
 
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">{metadata?.title || title || "Transcript"}</h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">{metadata?.title || title || "Video Transcript"}</h1>
             {url ? (
               <p className="text-gray-600 text-sm">
                 Source:{" "}
@@ -516,11 +542,39 @@ export default function ResultClient() {
             </div>
           ) : null}
 
+          {needsGenerate ? (
+            <Card className="border-emerald-200 bg-emerald-50">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base text-emerald-900">Generate Transcript</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="whitespace-pre-wrap text-sm text-emerald-900/80">
+                  Click "Get Transcript" to generate the transcript for this video.
+                </p>
+                <div className="mt-4 flex gap-2 flex-wrap">
+                  <Button variant="outline" onClick={() => router.push("/")}>
+                    Try another video
+                  </Button>
+                  <Button onClick={handleGenerateTranscript} disabled={loading}>
+                    {loading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      "Get Transcript"
+                    )}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          ) : null}
+
           {error ? (
             <Card className="border-destructive/40 bg-destructive/5">
               <CardHeader className="pb-3">
                 <CardTitle className="text-base text-destructive">
-                  {url && !transcriptParam ? "Generate Transcript" : "Unable to get transcript"}
+                  Unable to get transcript
                 </CardTitle>
               </CardHeader>
               <CardContent>
