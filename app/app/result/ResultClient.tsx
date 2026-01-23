@@ -143,6 +143,12 @@ export default function ResultClient() {
       const data = await res.json()
 
       if (!res.ok) {
+        if (data.code === "RATE_LIMIT_EXCEEDED") {
+          toast.error("Rate limit reached. Please try again in a few minutes.", {
+            duration: 5000,
+          })
+          return
+        }
         throw new Error(data.error || "Failed to generate summary")
       }
 

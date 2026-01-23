@@ -105,11 +105,25 @@ Summary:`
     if (!openaiResponse.ok) {
       const errorData = await openaiResponse.json().catch(() => ({}))
       console.error("OpenAI API error:", errorData)
+      
+      // Handle rate limit errors specifically
+      const errorMessage = errorData?.error?.message || ""
+      if (errorMessage.includes("Rate limit") || errorMessage.includes("rate_limit")) {
+        return NextResponse.json(
+          {
+            ok: false,
+            code: "RATE_LIMIT_EXCEEDED",
+            error: "OpenAI rate limit reached. Please try again in a few minutes. If this persists, the service may need to upgrade its OpenAI plan.",
+          },
+          { status: 429 }
+        )
+      }
+      
       return NextResponse.json(
         {
           ok: false,
           code: "OPENAI_ERROR",
-          error: errorData?.error?.message || "Failed to generate summary. Please try again.",
+          error: errorMessage || "Failed to generate summary. Please try again.",
         },
         { status: 500 }
       )
