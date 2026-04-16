@@ -8,12 +8,11 @@ export default withAuth(
   {
     callbacks: {
       authorized: ({ token, req }) => {
-        // Protect /app/result and /account routes
+        // Transcript flow is public; only account area requires login
         const path = req.nextUrl.pathname
-        if (path.startsWith("/app/result") || path.startsWith("/account")) {
+        if (path.startsWith("/account")) {
           return !!token
         }
-        // Allow all other routes
         return true
       },
     },
@@ -21,8 +20,5 @@ export default withAuth(
 )
 
 export const config = {
-  matcher: [
-    "/app/result/:path*",
-    "/account/:path*",
-  ],
+  matcher: ["/account/:path*"],
 }

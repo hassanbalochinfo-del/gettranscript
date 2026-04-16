@@ -1,16 +1,9 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth/next"
-import { authOptions } from "@/lib/auth"
-import { prisma } from "@/lib/db"
 
 export const runtime = "nodejs"
 
 /**
- * AI Summarization endpoint - AVAILABLE TO ALL USERS
- * 
- * IMPORTANT: This endpoint does NOT deduct credits.
- * Summarization is available to all logged-in users (no subscription or credits required).
- * Credits are ONLY deducted when generating transcripts via /api/transcribe.
+ * AI Summarization — public, no login, no credits (same as transcript promo period).
  */
 export async function POST(req: NextRequest) {
   try {
@@ -23,30 +16,6 @@ export async function POST(req: NextRequest) {
           error: "Summarization is not configured. Please set OPENAI_API_KEY on the server.",
         },
         { status: 501 }
-      )
-    }
-
-    // Check authentication
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { ok: false, code: "UNAUTHORIZED", error: "Please log in to use summarization." },
-        { status: 401 }
-      )
-    }
-
-    // Verify user exists (no subscription or credits check required)
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: {
-        id: true,
-      },
-    })
-
-    if (!user) {
-      return NextResponse.json(
-        { ok: false, code: "USER_NOT_FOUND", error: "User not found." },
-        { status: 404 }
       )
     }
 

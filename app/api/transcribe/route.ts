@@ -1,6 +1,4 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth/next"
-import { authOptions } from "@/lib/auth"
 import { prisma } from "@/lib/db"
 
 export const runtime = "nodejs"
@@ -158,9 +156,8 @@ export async function GET(req: NextRequest) {
 }
 
 /**
- * POST /api/transcribe - Generate new transcript (CHARGES 1 CREDIT)
+ * POST /api/transcribe - Generate transcript (public, no login, no credits)
  * Body: { url, format?, sendMetadata?, requestId? }
- * Idempotent: Same user + same videoId = only charges once
  */
 export async function POST(req: NextRequest) {
   try {
@@ -174,27 +171,6 @@ export async function POST(req: NextRequest) {
     const videoId = extractYouTubeVideoId(url)
     if (!videoId) {
       return NextResponse.json({ error: "Invalid YouTube URL" }, { status: 400 })
-    }
-
-    // Check idempotency FIRST (before any external API calls)
-    // Same user + same videoId = only charge once
-    const session = await getServerSession(authOptions)
-    let alreadyCharged = false
-    
-    if (session?.user?.id) {
-      const idempotencyKey = `transcribe_${session.user.id}_${videoId}`
-      
-      // Check if we already charged for this user+video combination
-      const existing = await prisma.creditLedger.findUnique({ 
-        where: { externalId: idempotencyKey } 
-      })
-      
-      if (existing) {
-        // Already charged - return early with cached/previous transcript
-        // Note: We don't store transcripts in DB, so we still need to fetch from TranscriptAPI
-        // But we won't charge credits again
-        alreadyCharged = true
-      }
     }
 
     const apiKey = process.env.TRANSCRIPTAPI_KEY
@@ -248,59 +224,6 @@ export async function POST(req: NextRequest) {
         { error: "No transcript found for this video.", code: "NO_TRANSCRIPT", detail: data },
         { status: 404 }
       )
-    }
-
-    // Deduct 1 credit ONLY if not already charged (idempotency check happened above)
-    if (session?.user?.id && !alreadyCharged) {
-      const idempotencyKey = `transcribe_${session.user.id}_${videoId}`
-      
-      await prisma.$transaction(async (tx) => {
-        // Double-check idempotency inside transaction (race condition protection)
-        const doubleCheck = await tx.creditLedger.findUnique({ 
-          where: { externalId: idempotencyKey } 
-        })
-        if (doubleCheck) {
-          // Another request already charged, skip
-          return
-        }
-
-        const user = await tx.user.findUnique({ where: { id: session.user.id } })
-        if (!user) {
-          throw new Error("User not found")
-        }
-
-        if (user.creditsBalance <= 0) {
-          const err: any = new Error("OUT_OF_CREDITS")
-          err.code = "OUT_OF_CREDITS"
-          throw err
-        }
-
-        const newBalance = user.creditsBalance - 1
-        await tx.user.update({
-          where: { id: user.id },
-          data: { creditsBalance: newBalance },
-        })
-        await tx.creditLedger.create({
-          data: {
-            userId: user.id,
-            type: "transcript_generated",
-            amount: -1,
-            balanceAfter: newBalance,
-            description: "Transcript generated",
-            externalId: idempotencyKey,
-            metadata: {
-              videoId,
-              url,
-            },
-          },
-        })
-      }).catch((e: any) => {
-        // Map out-of-credits to a proper HTTP response
-        if (e?.code === "OUT_OF_CREDITS" || e?.message === "OUT_OF_CREDITS") {
-          throw Object.assign(new Error("OUT_OF_CREDITS"), { httpStatus: 402 })
-        }
-        throw e
-      })
     }
 
     const language = picked.language || (typeof data?.language === "string" ? data.language : "") || ""
@@ -397,12 +320,6 @@ ${plainText}`
       aiConfigured,
     })
   } catch (error: any) {
-    if (error?.httpStatus === 402 || error?.message === "OUT_OF_CREDITS") {
-      return NextResponse.json(
-        { error: "You're out of credits. Please add more credits to generate transcripts.", code: "OUT_OF_CREDITS" },
-        { status: 402 }
-      )
-    }
     return NextResponse.json(
       { error: error?.message || "Failed to transcribe video" },
       { status: 500 }

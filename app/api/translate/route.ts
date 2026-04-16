@@ -3,11 +3,7 @@ import { NextResponse } from "next/server"
 export const runtime = "nodejs"
 
 /**
- * Translation endpoint - COMPLETELY FREE
- * 
- * IMPORTANT: This endpoint does NOT deduct credits.
- * Translation is free for all users, regardless of subscription status.
- * Credits are ONLY deducted when generating transcripts via /api/transcribe.
+ * Translation endpoint — free for everyone, no login required.
  */
 
 type Segment = { text: string; start?: number; duration?: number }
@@ -24,9 +20,7 @@ function safeJsonParse(text: string) {
 }
 
 export async function POST(req: Request) {
-  // NOTE: This endpoint does NOT deduct credits.
-  // Translation is completely free - no database access, no credit checks, no deductions.
-  // Credits are ONLY deducted in /api/transcribe when generating the transcript.
+  // No credits or auth — public feature.
   
   const apiKey = process.env.OPENAI_API_KEY
   if (!apiKey) {
