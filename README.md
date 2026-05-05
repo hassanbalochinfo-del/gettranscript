@@ -25,6 +25,7 @@ Open [http://localhost:3000](http://localhost:3000)
 ```env
 # Optional: Google AdSense
 NEXT_PUBLIC_ADSENSE_ID=your-adsense-publisher-id
+NEXT_PUBLIC_ADSENSE_SLOT_REWARDED=your-rewarded-ad-slot-id
 
 # Optional: AssemblyAI for videos without captions
 ASSEMBLYAI_API_KEY=your-key
@@ -55,6 +56,7 @@ Ads are automatically placed:
 - Bottom banner (above footer)
 
 Add your AdSense Publisher ID to `NEXT_PUBLIC_ADSENSE_ID` to enable.
+For the "watch ad before transcript" gate, also set `NEXT_PUBLIC_ADSENSE_SLOT_REWARDED`.
 
 ## API Endpoints
 

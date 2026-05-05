@@ -13,6 +13,7 @@ const _geistMono = Geist_Mono({ subsets: ["latin"] })
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://gettranscript.com"
 const siteName = "GetTranscript"
 const siteDescription = "Get instant YouTube transcripts for free. Paste a YouTube link and extract clean transcripts in seconds. Copy, download, and use transcripts with timestamps. Works with YouTube videos and Shorts."
+const adSenseId = process.env.NEXT_PUBLIC_ADSENSE_ID || "ca-pub-1227520669715406"
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -104,6 +105,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <meta name="google-adsense-account" content="ca-pub-1227520669715406" />
         {/* Google tag (gtag.js) */}
         <script
           async
@@ -121,12 +123,15 @@ export default function RootLayout({
         ></script>
       </head>
       <body className={`font-sans antialiased`}>
-        <Script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1227520669715406"
-          crossOrigin="anonymous"
-          strategy="afterInteractive"
-        />
+        {adSenseId ? (
+          <Script
+            id="adsense-script"
+            async
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adSenseId}`}
+            crossOrigin="anonymous"
+            strategy="afterInteractive"
+          />
+        ) : null}
         <Providers>
           {children}
           <Toaster />

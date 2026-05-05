@@ -13,6 +13,7 @@ This is now a **public, free tool** - no authentication required! Anyone can use
    ```env
    # Optional: Google AdSense for monetization
    NEXT_PUBLIC_ADSENSE_ID=your-adsense-publisher-id
+   NEXT_PUBLIC_ADSENSE_SLOT_REWARDED=your-rewarded-ad-slot-id
    
    # Optional: AssemblyAI for AI transcription (if you want to support videos without captions)
    ASSEMBLYAI_API_KEY=your-assemblyai-key
@@ -58,12 +59,14 @@ This is now a **public, free tool** - no authentication required! Anyone can use
 2. **Add to environment:**
    ```env
    NEXT_PUBLIC_ADSENSE_ID=ca-pub-XXXXXXXXXX
+   NEXT_PUBLIC_ADSENSE_SLOT_REWARDED=XXXXXXXXXX
    ```
 
 3. **Ad Placements:**
    - Top banner (below navbar)
    - In-article ads (between transcript sections)
    - Bottom banner (above footer)
+   - Rewarded gate ad (shown before "Get Transcript" continues)
 
 4. **AdSense Requirements:**
    - Your site must have original content

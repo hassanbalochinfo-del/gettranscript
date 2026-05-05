@@ -10,7 +10,7 @@ type AdSlotProps = {
   client?: string
   /**
    * Paste your ad slot id into:
-   * NEXT_PUBLIC_ADSENSE_SLOT_HOME / NEXT_PUBLIC_ADSENSE_SLOT_RESULT
+   * NEXT_PUBLIC_ADSENSE_SLOT_HOME / NEXT_PUBLIC_ADSENSE_SLOT_RESULT / NEXT_PUBLIC_ADSENSE_SLOT_REWARDED
    */
   slot?: string
   className?: string

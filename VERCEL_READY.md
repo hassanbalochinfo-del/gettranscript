@@ -38,6 +38,7 @@ Set these in Vercel project settings:
 - `NEXT_PUBLIC_ADSENSE_CLIENT` - AdSense client ID
 - `NEXT_PUBLIC_ADSENSE_SLOT_HOME` - AdSense slot for homepage
 - `NEXT_PUBLIC_ADSENSE_SLOT_RESULT` - AdSense slot for result page
+- `NEXT_PUBLIC_ADSENSE_SLOT_REWARDED` - Ad slot for the pre-transcript rewarded gate
 - `NEXT_PUBLIC_APP_URL` - Your app URL (for file uploads)
 
 ## Quick Deploy

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -13,6 +13,7 @@ import { toast } from "sonner"
 import { StructuredData } from "@/components/StructuredData"
 import { UI_COPY, PLAN_PRICES, PLAN_CREDITS } from "@/lib/constants"
 import { CheckoutButton } from "@/components/checkout-button"
+import { AdSlot } from "@/components/adsense/AdSlot"
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://gettranscript.com"
 
@@ -46,14 +47,40 @@ const plans = [
 export default function HomePage() {
   const router = useRouter()
   const [url, setUrl] = useState("")
+  const [showAdGate, setShowAdGate] = useState(false)
+  const [countdown, setCountdown] = useState(6)
+
+  const adSenseClient = process.env.NEXT_PUBLIC_ADSENSE_ID || process.env.NEXT_PUBLIC_ADSENSE_CLIENT
+  const rewardedAdSlot = process.env.NEXT_PUBLIC_ADSENSE_SLOT_REWARDED
+
+  useEffect(() => {
+    if (!showAdGate) return
+
+    setCountdown(6)
+    const timer = setInterval(() => {
+      setCountdown((prev) => (prev <= 1 ? 0 : prev - 1))
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [showAdGate])
+
+  const proceedToTranscript = () => {
+    router.push(`/app/result?url=${encodeURIComponent(url)}`)
+  }
 
   const handleGetTranscript = () => {
     if (!url.trim()) {
       toast.error("Please enter a YouTube URL")
       return
     }
-    
-    router.push(`/app/result?url=${encodeURIComponent(url)}`)
+
+    // If rewarded ad slot is configured, gate transcript behind ad view.
+    if (adSenseClient && rewardedAdSlot) {
+      setShowAdGate(true)
+      return
+    }
+
+    proceedToTranscript()
   }
 
   const structuredData = {
@@ -357,6 +384,41 @@ export default function HomePage() {
 
         <Footer />
       </div>
+
+      {showAdGate ? (
+        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
+          <div className="w-full max-w-2xl rounded-xl bg-background border border-border p-5 shadow-2xl">
+            <h3 className="text-lg font-semibold">Watch short ad to continue</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              After this ad, your transcript will start automatically.
+            </p>
+
+            <div className="mt-4 rounded-lg border border-border/70 p-3 bg-muted/20 min-h-[160px]">
+              <AdSlot
+                client={adSenseClient}
+                slot={rewardedAdSlot}
+                className="w-full"
+                style={{ minHeight: "140px" }}
+              />
+            </div>
+
+            <div className="mt-4 flex items-center justify-end gap-2">
+              <Button variant="outline" onClick={() => setShowAdGate(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  setShowAdGate(false)
+                  proceedToTranscript()
+                }}
+                disabled={countdown > 0}
+              >
+                {countdown > 0 ? `Continue in ${countdown}s` : "Continue to transcript"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </>
   )
 }

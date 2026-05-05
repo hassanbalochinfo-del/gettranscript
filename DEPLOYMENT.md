@@ -20,6 +20,7 @@ Set these environment variables in your Vercel project settings:
 - `NEXT_PUBLIC_ADSENSE_CLIENT` - Your Google AdSense client ID (public)
 - `NEXT_PUBLIC_ADSENSE_SLOT_HOME` - AdSense slot ID for homepage (public)
 - `NEXT_PUBLIC_ADSENSE_SLOT_RESULT` - AdSense slot ID for result page (public)
+- `NEXT_PUBLIC_ADSENSE_SLOT_REWARDED` - Ad slot used in the pre-transcript rewarded gate (public)
 - `NEXT_PUBLIC_APP_URL` - Your app URL (e.g., `https://your-domain.vercel.app`) - used for file uploads
 
 ## Deployment Steps
