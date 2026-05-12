@@ -105,11 +105,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <script id="cookieyes" type="text/javascript" src="https://cdn-cookieyes.com/client_data/2dcd820386a82d3317c627d1/script.js"></script>
         <meta name="google-adsense-account" content="ca-pub-1227520669715406" />
         {/* Google tag (gtag.js) */}
         <script
           async
-          src="https://www.googletagmanager.com/gtag/js?id=AW-17823016947"
+          src="https://www.googletagmanager.com/gtag/js?id=G-C6FB75Q6Y1"
         ></script>
         <script
           dangerouslySetInnerHTML={{
@@ -117,6 +118,7 @@ export default function RootLayout({
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
               gtag('js', new Date());
+              gtag('config', 'G-C6FB75Q6Y1');
               gtag('config', 'AW-17823016947');
             `,
           }}
