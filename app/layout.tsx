@@ -107,12 +107,16 @@ export default function RootLayout({
       <head>
         <script id="cookieyes" type="text/javascript" src="https://cdn-cookieyes.com/client_data/2dcd820386a82d3317c627d1/script.js"></script>
         <meta name="google-adsense-account" content="ca-pub-1227520669715406" />
-        {/* Google tag (gtag.js) */}
-        <script
-          async
+      </head>
+      <body className={`font-sans antialiased`}>
+        <Script
+          id="gtag-js"
           src="https://www.googletagmanager.com/gtag/js?id=G-C6FB75Q6Y1"
-        ></script>
-        <script
+          strategy="afterInteractive"
+        />
+        <Script
+          id="gtag-init"
+          strategy="afterInteractive"
           dangerouslySetInnerHTML={{
             __html: `
               window.dataLayer = window.dataLayer || [];
@@ -122,9 +126,7 @@ export default function RootLayout({
               gtag('config', 'AW-17823016947');
             `,
           }}
-        ></script>
-      </head>
-      <body className={`font-sans antialiased`}>
+        />
         {adSenseId ? (
           <Script
             id="adsense-script"
