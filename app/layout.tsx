@@ -112,11 +112,11 @@ export default function RootLayout({
         <Script
           id="gtag-js"
           src="https://www.googletagmanager.com/gtag/js?id=G-C6FB75Q6Y1"
-          strategy="afterInteractive"
+          strategy="beforeInteractive"
         />
         <Script
           id="gtag-init"
-          strategy="afterInteractive"
+          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html: `
               window.dataLayer = window.dataLayer || [];
