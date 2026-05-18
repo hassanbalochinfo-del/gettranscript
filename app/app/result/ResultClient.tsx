@@ -12,6 +12,52 @@ import { toast } from "sonner"
 import { ArrowLeft, Check, Copy, Download, Loader2, Languages, FileText, Sparkles } from "lucide-react"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
+const TRANSLATE_LANGUAGES = [
+  { value: "es", label: "Spanish" },
+  { value: "fr", label: "French" },
+  { value: "de", label: "German" },
+  { value: "it", label: "Italian" },
+  { value: "pt", label: "Portuguese" },
+  { value: "ru", label: "Russian" },
+  { value: "ja", label: "Japanese" },
+  { value: "ko", label: "Korean" },
+  { value: "zh", label: "Chinese" },
+  { value: "ar", label: "Arabic" },
+  { value: "hi", label: "Hindi" },
+] as const
+
+function SummaryBody({ text }: { text: string }) {
+  const lines = text.split("\n")
+  return (
+    <div className="space-y-2">
+      {lines.map((line, i) => {
+        const trimmed = line.trim()
+        if (!trimmed) return <div key={i} className="h-2" />
+        if (trimmed.startsWith("## ")) {
+          return (
+            <h3 key={i} className="text-base font-semibold text-gray-900 pt-3 first:pt-0">
+              {trimmed.replace(/^##\s+/, "")}
+            </h3>
+          )
+        }
+        if (trimmed.startsWith("- ") || trimmed.startsWith("• ")) {
+          return (
+            <p key={i} className="flex gap-2 text-gray-700 text-sm leading-relaxed pl-1">
+              <span className="text-emerald-600 shrink-0">•</span>
+              <span>{trimmed.replace(/^[-•]\s+/, "").replace(/\*\*/g, "")}</span>
+            </p>
+          )
+        }
+        return (
+          <p key={i} className="text-gray-700 text-sm leading-relaxed">
+            {trimmed.replace(/\*\*/g, "")}
+          </p>
+        )
+      })}
+    </div>
+  )
+}
+
 type TranscriptMetadata = {
   title?: string | null
   author_name?: string | null
@@ -81,8 +127,11 @@ export default function ResultClient() {
   const [translatedText, setTranslatedText] = useState<string | null>(null)
   const [translating, setTranslating] = useState(false)
   const [selectedLanguage, setSelectedLanguage] = useState<string>("")
+  const [pendingTranslateLang, setPendingTranslateLang] = useState<string>("es")
+  const [translateStatus, setTranslateStatus] = useState<string>("")
   const [summary, setSummary] = useState<string | null>(null)
   const [summarizing, setSummarizing] = useState(false)
+  const [summaryTruncated, setSummaryTruncated] = useState(false)
   const [activeTab, setActiveTab] = useState<"transcript" | "summary">("transcript")
   const [needsGenerate, setNeedsGenerate] = useState(false)
   const [metaFetched, setMetaFetched] = useState(false)
@@ -97,22 +146,22 @@ export default function ResultClient() {
     return translatedText || rawTranscript || ""
   }, [translatedText, rawTranscript])
 
-  const handleTranslate = async (targetLang: string) => {
-    if (!rawTranscript || translating) return
+  const handleTranslate = async () => {
+    const targetLang = pendingTranslateLang
+    if (!rawTranscript || translating || !targetLang) return
+
+    const langLabel = TRANSLATE_LANGUAGES.find((l) => l.value === targetLang)?.label || targetLang
 
     setTranslating(true)
-    setSelectedLanguage(targetLang)
+    setTranslateStatus(`Translating to ${langLabel}…`)
 
     try {
-      // Convert plain text to segments for translation API
-      const segments = [{ text: rawTranscript }]
-      
       const res = await fetch("/api/translate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          segments: segments,
-          targetLang: targetLang,
+          text: rawTranscript,
+          targetLang,
           sourceLang: language || undefined,
         }),
       })
@@ -123,15 +172,30 @@ export default function ResultClient() {
         throw new Error(data.error || "Translation failed")
       }
 
-      if (data.segments && Array.isArray(data.segments) && data.segments.length > 0) {
-        setTranslatedText(data.segments[0].text)
-        toast.success(`Translated to ${targetLang.toUpperCase()}`)
+      const translated =
+        typeof data.text === "string"
+          ? data.text
+          : data.segments?.[0]?.text
+
+      if (translated) {
+        setTranslatedText(translated)
+        setSelectedLanguage(targetLang)
+        if (videoId) {
+          localStorage.setItem(
+            `translate_${videoId}_${targetLang}`,
+            JSON.stringify({ text: translated, timestamp: Date.now() })
+          )
+        }
+        toast.success(`Translated to ${langLabel}`)
+      } else {
+        throw new Error("No translation returned")
       }
-    } catch (error: any) {
-      toast.error(error.message || "Translation failed")
-      setSelectedLanguage("")
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Translation failed"
+      toast.error(message)
     } finally {
       setTranslating(false)
+      setTranslateStatus("")
     }
   }
 
@@ -164,8 +228,8 @@ export default function ResultClient() {
 
       if (data.ok && data.summary) {
         setSummary(data.summary)
-        setActiveTab("summary")
-        toast.success("Summary generated successfully!")
+        setSummaryTruncated(Boolean(data.truncated))
+        toast.success("Summary ready — scroll down to read it")
       } else {
         throw new Error("Invalid response from server")
       }
@@ -667,60 +731,124 @@ export default function ResultClient() {
                   </Card>
                 ) : null}
 
-                <Card className="bg-gray-50 border-gray-200 p-4">
-                  <div className="flex items-center justify-between gap-4 flex-wrap">
-                    <p className="text-gray-700 text-sm font-medium">Quick Actions</p>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
-                      <Select
-                        value={selectedLanguage}
-                        onValueChange={handleTranslate}
-                        disabled={translating || !rawTranscript}
-                      >
-                        <SelectTrigger className="h-9 bg-white border-gray-300 text-gray-900 hover:bg-emerald-600 hover:border-emerald-500 hover:text-white transition-all">
-                          <SelectValue
-                            placeholder={
-                              <>
-                                <Languages className="h-4 w-4 mr-2 inline" />
-                                Translate
-                              </>
-                            }
-                          />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="es">🇪🇸 Spanish</SelectItem>
-                          <SelectItem value="fr">🇫🇷 French</SelectItem>
-                          <SelectItem value="de">🇩🇪 German</SelectItem>
-                          <SelectItem value="it">🇮🇹 Italian</SelectItem>
-                          <SelectItem value="pt">🇵🇹 Portuguese</SelectItem>
-                          <SelectItem value="ru">🇷🇺 Russian</SelectItem>
-                          <SelectItem value="ja">🇯🇵 Japanese</SelectItem>
-                          <SelectItem value="ko">🇰🇷 Korean</SelectItem>
-                          <SelectItem value="zh">🇨🇳 Chinese</SelectItem>
-                          <SelectItem value="ar">🇸🇦 Arabic</SelectItem>
-                          <SelectItem value="hi">🇮🇳 Hindi</SelectItem>
-                        </SelectContent>
-                      </Select>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Card className="border-2 border-emerald-200 bg-emerald-50/50 shadow-sm">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base flex items-center gap-2 text-gray-900">
+                        <Languages className="h-5 w-5 text-emerald-600" />
+                        Translate transcript
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <p className="text-sm text-gray-600 leading-relaxed">
+                        Read the video in another language. We translate in parallel chunks so long transcripts finish faster.
+                      </p>
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <Select
+                          value={pendingTranslateLang}
+                          onValueChange={setPendingTranslateLang}
+                          disabled={translating || !rawTranscript}
+                        >
+                          <SelectTrigger className="h-10 bg-white border-gray-300 flex-1">
+                            <SelectValue placeholder="Choose language" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {TRANSLATE_LANGUAGES.map((lang) => (
+                              <SelectItem key={lang.value} value={lang.value}>
+                                {lang.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <Button
+                          className="h-10 bg-emerald-600 hover:bg-emerald-700 text-white shrink-0"
+                          onClick={handleTranslate}
+                          disabled={translating || !rawTranscript}
+                        >
+                          {translating ? (
+                            <>
+                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                              Translating…
+                            </>
+                          ) : (
+                            "Translate"
+                          )}
+                        </Button>
+                      </div>
+                      {translating && translateStatus ? (
+                        <p className="text-xs text-emerald-800 font-medium">{translateStatus}</p>
+                      ) : null}
+                      {translatedText && selectedLanguage ? (
+                        <div className="flex items-center justify-between gap-2 rounded-lg bg-white border border-emerald-200 px-3 py-2">
+                          <p className="text-xs text-gray-600">
+                            Showing{" "}
+                            <span className="font-medium text-gray-900">
+                              {TRANSLATE_LANGUAGES.find((l) => l.value === selectedLanguage)?.label ||
+                                selectedLanguage.toUpperCase()}
+                            </span>{" "}
+                            translation
+                          </p>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 text-emerald-700"
+                            onClick={() => {
+                              setTranslatedText(null)
+                              setSelectedLanguage("")
+                            }}
+                          >
+                            Show original
+                          </Button>
+                        </div>
+                      ) : null}
+                    </CardContent>
+                  </Card>
 
+                  <Card className="border-2 border-violet-200 bg-violet-50/40 shadow-sm">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base flex items-center gap-2 text-gray-900">
+                        <Sparkles className="h-5 w-5 text-violet-600" />
+                        Summarize video
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <p className="text-sm text-gray-600 leading-relaxed">
+                        Get a plain-language recap: what the video is about, main points, and takeaways — so you can understand it without reading the full transcript.
+                      </p>
                       <Button
-                        variant="outline"
-                        size="sm"
-                        className="bg-white border-gray-300 text-gray-900 hover:bg-emerald-600 hover:border-emerald-500 hover:text-white transition-all"
+                        className="h-10 bg-violet-600 hover:bg-violet-700 text-white w-full sm:w-auto"
                         onClick={handleSummarize}
                         disabled={summarizing || !rawTranscript}
                       >
                         {summarizing ? (
                           <>
                             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            Summarizing...
+                            Building summary…
                           </>
+                        ) : summary ? (
+                          "Regenerate summary"
                         ) : (
-                          <>
-                            <Sparkles className="h-4 w-4 mr-2" />
-                            Summarize
-                          </>
+                          "Generate summary"
                         )}
                       </Button>
+                      {summary ? (
+                        <div className="rounded-lg border border-violet-200 bg-white p-4 max-h-[280px] overflow-y-auto">
+                          {summaryTruncated ? (
+                            <p className="text-xs text-amber-700 mb-3">
+                              This video is long — summary is based on the first part of the transcript.
+                            </p>
+                          ) : null}
+                          <SummaryBody text={summary} />
+                        </div>
+                      ) : null}
+                    </CardContent>
+                  </Card>
+                </div>
 
+                <Card className="bg-gray-50 border-gray-200 p-4">
+                  <div className="flex items-center justify-between gap-4 flex-wrap">
+                    <p className="text-gray-700 text-sm font-medium">Export</p>
+                    <div className="flex flex-wrap gap-2">
                       <Button
                         variant="outline"
                         size="sm"
@@ -731,7 +859,6 @@ export default function ResultClient() {
                         {copied ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
                         {copied ? "Copied" : "Copy"}
                       </Button>
-
                       <Button
                         variant="outline"
                         size="sm"
@@ -742,7 +869,6 @@ export default function ResultClient() {
                         <Download className="h-4 w-4 mr-2" />
                         TXT
                       </Button>
-
                       <Button
                         variant="outline"
                         size="sm"
@@ -755,20 +881,6 @@ export default function ResultClient() {
                       </Button>
                     </div>
                   </div>
-                  {translatedText ? (
-                    <div className="mt-3">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setTranslatedText(null)
-                          setSelectedLanguage("")
-                        }}
-                      >
-                        Show Original
-                      </Button>
-                    </div>
-                  ) : null}
                 </Card>
 
                 <div>
@@ -807,9 +919,12 @@ export default function ResultClient() {
                       <Card className="bg-white border-gray-200 p-6">
                         {summary ? (
                           <div className="space-y-4">
-                            <div className="text-gray-700 text-sm leading-relaxed whitespace-pre-wrap break-words">
-                              {summary}
-                            </div>
+                            {summaryTruncated ? (
+                              <p className="text-xs text-amber-700">
+                                Long video — summary covers the first section of the transcript.
+                              </p>
+                            ) : null}
+                            <SummaryBody text={summary} />
                             <div className="flex gap-2 flex-wrap">
                               <Button
                                 variant="outline"
@@ -844,22 +959,9 @@ export default function ResultClient() {
                             </div>
                           </div>
                         ) : (
-                          <div className="space-y-3">
-                            <p className="text-sm text-gray-500">No summary yet. Click Summarize to generate one.</p>
-                            <Button onClick={handleSummarize} disabled={summarizing || !rawTranscript}>
-                              {summarizing ? (
-                                <>
-                                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                  Summarizing...
-                                </>
-                              ) : (
-                                <>
-                                  <Sparkles className="h-4 w-4 mr-2" />
-                                  Summarize
-                                </>
-                              )}
-                            </Button>
-                          </div>
+                          <p className="text-sm text-gray-500">
+                            Use the <strong>Summarize video</strong> card above to generate a readable recap.
+                          </p>
                         )}
                       </Card>
                     </TabsContent>

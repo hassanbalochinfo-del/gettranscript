@@ -2,14 +2,14 @@ import { NextResponse } from "next/server"
 
 export const runtime = "nodejs"
 
-/**
- * Translation endpoint — free for everyone, no login required.
- */
-
 type Segment = { text: string; start?: number; duration?: number }
 
-// Keep in sync with the language options shown in the UI.
-const SUPPORTED = new Set(["EN", "ES", "FR", "DE", "IT", "PT", "TR", "AR", "HI", "UR", "RU", "JA", "KO", "ZH"])
+const SUPPORTED = new Set([
+  "EN", "ES", "FR", "DE", "IT", "PT", "TR", "AR", "HI", "UR", "RU", "JA", "KO", "ZH",
+])
+
+const CHUNK_SIZE = 3500
+const PARALLEL = 4
 
 function safeJsonParse(text: string) {
   try {
@@ -19,54 +19,47 @@ function safeJsonParse(text: string) {
   }
 }
 
-export async function POST(req: Request) {
-  // No credits or auth — public feature.
-  
-  const apiKey = process.env.OPENAI_API_KEY
-  if (!apiKey) {
-    return NextResponse.json(
-      {
-        ok: false,
-        code: "TRANSLATION_NOT_CONFIGURED",
-        error: "Translation is not configured. Please set OPENAI_API_KEY on the server.",
-      },
-      { status: 501 }
-    )
+function chunkText(text: string, maxSize = CHUNK_SIZE): string[] {
+  if (text.length <= maxSize) return [text]
+
+  const chunks: string[] = []
+  const paragraphs = text.split(/\n{2,}/)
+  let current = ""
+
+  for (const paragraph of paragraphs) {
+    const next = current ? `${current}\n\n${paragraph}` : paragraph
+    if (next.length > maxSize && current) {
+      chunks.push(current.trim())
+      current = paragraph
+    } else if (paragraph.length > maxSize) {
+      if (current) {
+        chunks.push(current.trim())
+        current = ""
+      }
+      for (let i = 0; i < paragraph.length; i += maxSize) {
+        chunks.push(paragraph.slice(i, i + maxSize))
+      }
+    } else {
+      current = next
+    }
   }
 
-  let body: any = null
-  try {
-    body = await req.json()
-  } catch {
-    return NextResponse.json({ ok: false, code: "INVALID_INPUT", error: "Expected JSON body." }, { status: 400 })
-  }
+  if (current.trim()) chunks.push(current.trim())
+  return chunks.length > 0 ? chunks : [text]
+}
 
-  const targetLang = String(body?.targetLang || "").toUpperCase().trim()
-  const sourceLang = body?.sourceLang ? String(body.sourceLang) : undefined
-  const segments = Array.isArray(body?.segments) ? (body.segments as Segment[]) : null
-
-  if (!targetLang || !SUPPORTED.has(targetLang)) {
-    return NextResponse.json(
-      { ok: false, code: "INVALID_INPUT", error: "Unsupported target language." },
-      { status: 400 }
-    )
-  }
-
-  if (!segments || segments.length === 0) {
-    return NextResponse.json({ ok: false, code: "INVALID_INPUT", error: "Missing segments." }, { status: 400 })
-  }
-
-  const texts = segments.map((s) => String(s?.text ?? ""))
-
-  // Translate in one request; keep alignment by returning an array with the same length/order.
+async function translateChunk(
+  apiKey: string,
+  text: string,
+  targetLang: string,
+  sourceLang?: string
+): Promise<string> {
   const prompt = [
-    `Translate the following transcript segments into ${targetLang}.`,
-    sourceLang ? `Source language hint: ${sourceLang}.` : "",
-    "Return ONLY valid JSON: an array of strings, same length and same order as input.",
-    "Do not add commentary, labels, or extra fields.",
+    `Translate the following text into ${targetLang}.`,
+    sourceLang ? `Source language: ${sourceLang}.` : "",
+    "Preserve paragraph breaks. Return ONLY the translated text — no labels, quotes, or JSON.",
     "",
-    "Input JSON array:",
-    JSON.stringify(texts),
+    text,
   ]
     .filter(Boolean)
     .join("\n")
@@ -80,8 +73,9 @@ export async function POST(req: Request) {
     body: JSON.stringify({
       model: "gpt-4o-mini",
       temperature: 0.2,
+      max_tokens: Math.min(4096, Math.ceil(text.length * 1.5)),
       messages: [
-        { role: "system", content: "You are a precise translation engine." },
+        { role: "system", content: "You are a fast, accurate translator. Output only the translation." },
         { role: "user", content: prompt },
       ],
     }),
@@ -89,33 +83,91 @@ export async function POST(req: Request) {
 
   const raw = await res.text()
   if (!res.ok) {
-    const detail = safeJsonParse(raw) ?? { raw: raw.slice(0, 500) }
-    return NextResponse.json(
-      { ok: false, code: "UPSTREAM_ERROR", error: "Translation request failed.", detail },
-      { status: 502 }
-    )
+    const detail = safeJsonParse(raw) ?? { raw: raw.slice(0, 300) }
+    throw new Error((detail as { error?: { message?: string } })?.error?.message || "Translation failed")
   }
 
   const payload = safeJsonParse(raw)
-  const content = payload?.choices?.[0]?.message?.content
-  if (!content || typeof content !== "string") {
-    return NextResponse.json({ ok: false, code: "UPSTREAM_ERROR", error: "Invalid translation response." }, { status: 502 })
+  const content = payload?.choices?.[0]?.message?.content?.trim()
+  if (!content) throw new Error("Empty translation response")
+  return content
+}
+
+async function translateInParallel(
+  apiKey: string,
+  chunks: string[],
+  targetLang: string,
+  sourceLang?: string
+): Promise<string> {
+  const results = new Array<string>(chunks.length)
+  let index = 0
+
+  async function worker() {
+    while (index < chunks.length) {
+      const i = index++
+      results[i] = await translateChunk(apiKey, chunks[i], targetLang, sourceLang)
+    }
   }
 
-  const translated = safeJsonParse(content)
-  if (!Array.isArray(translated) || translated.length !== segments.length) {
+  await Promise.all(Array.from({ length: Math.min(PARALLEL, chunks.length) }, () => worker()))
+  return results.join("\n\n")
+}
+
+export async function POST(req: Request) {
+  const apiKey = process.env.OPENAI_API_KEY
+  if (!apiKey) {
     return NextResponse.json(
-      { ok: false, code: "UPSTREAM_ERROR", error: "Translation output shape mismatch." },
-      { status: 502 }
+      {
+        ok: false,
+        code: "TRANSLATION_NOT_CONFIGURED",
+        error: "Translation is not configured. Please set OPENAI_API_KEY on the server.",
+      },
+      { status: 501 }
     )
   }
 
-  const out: Segment[] = segments.map((s, idx) => ({
-    start: s.start,
-    duration: s.duration,
-    text: String(translated[idx] ?? ""),
-  }))
+  let body: Record<string, unknown> | null = null
+  try {
+    body = await req.json()
+  } catch {
+    return NextResponse.json({ ok: false, code: "INVALID_INPUT", error: "Expected JSON body." }, { status: 400 })
+  }
 
-  return NextResponse.json({ ok: true, segments: out })
+  const targetLang = String(body?.targetLang || "").toUpperCase().trim()
+  const sourceLang = body?.sourceLang ? String(body.sourceLang) : undefined
+  const segments = Array.isArray(body?.segments) ? (body.segments as Segment[]) : null
+  const plainText = typeof body?.text === "string" ? body.text : null
+
+  if (!targetLang || !SUPPORTED.has(targetLang)) {
+    return NextResponse.json(
+      { ok: false, code: "INVALID_INPUT", error: "Unsupported target language." },
+      { status: 400 }
+    )
+  }
+
+  const fullText =
+    plainText?.trim() ||
+    (segments?.length ? segments.map((s) => String(s?.text ?? "")).join("\n") : "")
+
+  if (!fullText) {
+    return NextResponse.json({ ok: false, code: "INVALID_INPUT", error: "Missing text to translate." }, { status: 400 })
+  }
+
+  try {
+    const chunks = chunkText(fullText)
+    const translated = await translateInParallel(apiKey, chunks, targetLang, sourceLang)
+
+    return NextResponse.json({
+      ok: true,
+      text: translated,
+      segments: [{ text: translated }],
+      chunkCount: chunks.length,
+    })
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : "Translation failed"
+    return NextResponse.json(
+      { ok: false, code: "UPSTREAM_ERROR", error: message },
+      { status: 502 }
+    )
+  }
 }
-

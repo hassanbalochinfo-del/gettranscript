@@ -2,9 +2,18 @@ import { NextRequest, NextResponse } from "next/server"
 
 export const runtime = "nodejs"
 
-/**
- * AI Summarization — public, no login, no credits (same as transcript promo period).
- */
+const MAX_TRANSCRIPT_CHARS = 14000
+
+function trimTranscript(transcript: string) {
+  if (transcript.length <= MAX_TRANSCRIPT_CHARS) {
+    return { text: transcript, truncated: false }
+  }
+  return {
+    text: transcript.slice(0, MAX_TRANSCRIPT_CHARS),
+    truncated: true,
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const apiKey = process.env.OPENAI_API_KEY
@@ -19,7 +28,6 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Get transcript from request
     const body = await req.json().catch(() => ({}))
     const transcript = body?.transcript || body?.text || ""
 
@@ -30,145 +38,96 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // Generate summary using OpenAI with retry logic and fallback
-    const generateSummary = async (model: string, retryCount = 0): Promise<{ summary: string } | { error: string }> => {
-      const prompt = `You are a professional video content summarizer. Create a clear, well-structured summary of the following video transcript.
+    const { text: transcriptForModel, truncated } = trimTranscript(transcript.trim())
 
-STRUCTURE YOUR SUMMARY AS FOLLOWS:
+    const prompt = `You help people understand YouTube videos without watching them. Write a clear, friendly summary from this transcript.
 
-1. **Introduction** (1-2 sentences)
-   - Briefly state what the video is about and its main topic
+Rules:
+- Use plain language (no jargon unless the video uses it)
+- Be accurate — only include what the transcript supports
+- Use this exact structure with markdown headings:
 
-2. **Main Points** (3-5 bullet points or short paragraphs)
-   - Identify and explain the key points discussed
-   - Use clear, concise language
-   - Focus on the most important information
+## What this video is about
+2–3 short sentences explaining the topic in simple terms.
 
-3. **Key Takeaways** (2-3 sentences)
-   - Highlight the most valuable insights or lessons
-   - What should the viewer remember?
+## Main points
+- 4–6 bullet points with the most important ideas
+- Each bullet should be one easy-to-read line
 
-4. **Conclusion** (1-2 sentences)
-   - Summarize the overall message or purpose
-   - What is the main takeaway?
+## Key takeaways
+2–3 sentences on what matters most for the viewer.
 
-GUIDELINES:
-- Write in a clear, professional, and easy-to-read style
-- Use proper paragraph breaks for readability
-- Be specific and accurate - base everything on the transcript
-- Aim for 250-400 words total
-- Make it scannable - use formatting that helps readers quickly understand the content
-- Focus on clarity and consistency
+## Who this is useful for
+One sentence on who would benefit (students, creators, etc.).
 
+${truncated ? "Note: The transcript was long — base the summary on the portion provided.\n" : ""}
 Transcript:
-${transcript}
+${transcriptForModel}`
 
-Summary:`
-
-      try {
-        const openaiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${apiKey}`,
+    const openaiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content:
+              "You write readable video summaries for everyday people. Use clear headings and bullets. Be concise and helpful.",
           },
-          body: JSON.stringify({
-            model: model,
-            messages: [
-              {
-                role: "system",
-                content:
-                  "You are a professional content summarizer. Create clear, well-structured summaries that help readers quickly understand video content. Use consistent formatting and clear language.",
-              },
-              {
-                role: "user",
-                content: prompt,
-              },
-            ],
-            temperature: 0.5, // Lower temperature for more consistent results
-            max_tokens: 1200, // Increased for better summaries
-          }),
-        })
+          { role: "user", content: prompt },
+        ],
+        temperature: 0.4,
+        max_tokens: 900,
+      }),
+    })
 
-        if (!openaiResponse.ok) {
-          const errorData = await openaiResponse.json().catch(() => ({}))
-          const errorMessage = errorData?.error?.message || ""
-          
-          // Handle rate limit - retry with fallback model or wait
-          if ((errorMessage.includes("Rate limit") || errorMessage.includes("rate_limit")) && retryCount === 0) {
-            // Try with gpt-3.5-turbo as fallback (usually has higher rate limits)
-            if (model === "gpt-4o-mini") {
-              console.log("Rate limit hit on gpt-4o-mini, trying gpt-3.5-turbo fallback")
-              return generateSummary("gpt-3.5-turbo", 1)
-            }
-          }
-          
-          throw new Error(errorMessage || "OpenAI API error")
-        }
+    if (!openaiResponse.ok) {
+      const errorData = await openaiResponse.json().catch(() => ({}))
+      const errorMessage = errorData?.error?.message || "OpenAI API error"
 
-        const openaiData = await openaiResponse.json()
-        const summary = openaiData?.choices?.[0]?.message?.content?.trim() || ""
-
-        if (!summary) {
-          throw new Error("Empty summary returned")
-        }
-
-        return { summary }
-      } catch (error: any) {
-        const errorMessage = error?.message || "Unknown error"
-        
-        // If rate limit and we haven't tried fallback yet
-        if (errorMessage.includes("Rate limit") && retryCount === 0 && model === "gpt-4o-mini") {
-          console.log("Rate limit error, trying gpt-3.5-turbo fallback")
-          return generateSummary("gpt-3.5-turbo", 1)
-        }
-        
-        return { error: errorMessage }
-      }
-    }
-
-    // Try with gpt-4o-mini first, fallback to gpt-3.5-turbo if rate limited
-    const result = await generateSummary("gpt-4o-mini")
-    
-    if ("error" in result) {
-      const errorMessage = result.error
-      
-      // Handle rate limit errors specifically
       if (errorMessage.includes("Rate limit") || errorMessage.includes("rate_limit")) {
         return NextResponse.json(
           {
             ok: false,
             code: "RATE_LIMIT_EXCEEDED",
-            error: "OpenAI rate limit reached. Please try again in a few minutes. If this persists, the service may need to upgrade its OpenAI plan.",
+            error: "Rate limit reached. Please try again in a few minutes.",
           },
           { status: 429 }
         )
       }
-      
+
       return NextResponse.json(
-        {
-          ok: false,
-          code: "OPENAI_ERROR",
-          error: errorMessage || "Failed to generate summary. Please try again.",
-        },
+        { ok: false, code: "OPENAI_ERROR", error: errorMessage },
         { status: 500 }
       )
     }
 
-    const summary = result.summary
+    const openaiData = await openaiResponse.json()
+    const summary = openaiData?.choices?.[0]?.message?.content?.trim() || ""
 
+    if (!summary) {
+      return NextResponse.json(
+        { ok: false, code: "OPENAI_ERROR", error: "Empty summary returned." },
+        { status: 500 }
+      )
+    }
 
     return NextResponse.json({
       ok: true,
       summary,
+      truncated,
     })
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Summarization error:", error)
     return NextResponse.json(
       {
         ok: false,
         code: "INTERNAL_ERROR",
-        error: error?.message || "An error occurred while generating the summary.",
+        error: error instanceof Error ? error.message : "An error occurred while generating the summary.",
       },
       { status: 500 }
     )
