@@ -1,3 +1,4 @@
+import { bestAiToolsStudents2026Post } from "./articles/best-ai-tools-students-2026"
 import { nolanOdyssey2026Post } from "./articles/nolan-odyssey-2026"
 import { comprehensibleInputEnglishPost } from "./articles/comprehensible-input-english"
 import { videoSourceQualityGuide } from "./articles/video-source-quality-guide"
@@ -12,6 +13,7 @@ export type BlogPost = {
 }
 
 export const BLOG_POSTS: BlogPost[] = [
+  bestAiToolsStudents2026Post,
   nolanOdyssey2026Post,
   comprehensibleInputEnglishPost,
   whyWeNeedSubtitlesPost,
