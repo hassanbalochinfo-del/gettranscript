@@ -1,3 +1,5 @@
+import { videoSourceQualityGuide } from "./articles/video-source-quality-guide"
+
 export type BlogPost = {
   slug: string
   title: string
@@ -7,6 +9,7 @@ export type BlogPost = {
 }
 
 export const BLOG_POSTS: BlogPost[] = [
+  videoSourceQualityGuide,
   {
     slug: "get-youtube-transcript-fast",
     title: "How to Get a YouTube Transcript Instantly",
