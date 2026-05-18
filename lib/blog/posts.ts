@@ -16,10 +16,8 @@ import { residencyWithoutMillionsPost } from "./articles/residency-without-milli
 import { bestAiToolsStudents2026Post } from "./articles/best-ai-tools-students-2026"
 import { nolanOdyssey2026Post } from "./articles/nolan-odyssey-2026"
 import { comprehensibleInputEnglishPost } from "./articles/comprehensible-input-english"
-import { whyWeNeedSubtitlesPost } from "./articles/why-we-need-subtitles"
 import { videoSourceQualityGuide } from "./articles/video-source-quality-guide"
-import { getYoutubeTranscriptFastPost } from "./articles/get-youtube-transcript-fast"
-import { timestampsMakeTranscriptsBetterPost } from "./articles/timestamps-make-transcripts-better"
+import { whyWeNeedSubtitlesPost } from "./articles/why-we-need-subtitles"
 
 export type BlogPost = {
   slug: string
@@ -53,8 +51,35 @@ export const BLOG_POSTS: BlogPost[] = [
   comprehensibleInputEnglishPost,
   whyWeNeedSubtitlesPost,
   videoSourceQualityGuide,
-  getYoutubeTranscriptFastPost,
-  timestampsMakeTranscriptsBetterPost,
+  {
+    slug: "get-youtube-transcript-fast",
+    title: "How to Get a YouTube Transcript Instantly",
+    date: "2025-01-01",
+    excerpt: "Paste a YouTube link, enable timestamps, and download a clean transcript in seconds.",
+    thumbnail: "https://images.unsplash.com/photo-1611162616475-46b635cb6868?w=1400&q=80&auto=format&fit=crop",
+    thumbnailAlt: "YouTube video on a screen for transcript extraction",
+    html: `
+      <p>Getting a transcript shouldn’t be a hassle. With GetTranscript, you can paste a YouTube video URL and fetch a clean transcript instantly.</p>
+      <h2>Tips</h2>
+      <ul>
+        <li><strong>Use timestamps</strong> for quoting and navigation.</li>
+        <li><strong>Download</strong> the transcript as TXT for easy sharing.</li>
+        <li>If a transcript isn’t available, it may be disabled by the creator or restricted.</li>
+      </ul>
+    `,
+  },
+  {
+    slug: "timestamps-make-transcripts-better",
+    title: "Why Timestamps Make Transcripts More Useful",
+    date: "2025-01-02",
+    excerpt: "Timestamps help you jump to the exact moment and keep quotes verifiable.",
+    thumbnail: "https://images.unsplash.com/photo-1593784991095-a205069470b6?w=1400&q=80&auto=format&fit=crop",
+    thumbnailAlt: "Video editing timeline representing transcript timestamps",
+    html: `
+      <p>Timestamps make transcripts actionable: you can cite exact moments, navigate quickly, and keep notes aligned to the video.</p>
+      <p>Enable the <em>Include timestamps</em> toggle to get segment-level timing when available.</p>
+    `,
+  },
 ]
 
 export function getPostBySlug(slug: string) {

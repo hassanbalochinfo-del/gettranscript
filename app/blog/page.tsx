@@ -9,6 +9,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 import { siteUrl } from "@/lib/seo"
 
+export const dynamic = "force-dynamic"
+
 export const metadata: Metadata = {
   title: "Blog - GetTranscript",
   description: "Read guides and tips for getting the most out of YouTube transcripts. Learn how to extract, use, and optimize transcripts for your workflow.",
@@ -29,9 +31,7 @@ export default function BlogIndexPage() {
       <main className="flex-1">
         <div className="container mx-auto max-w-6xl px-4 py-14 sm:px-6">
           <h1 className="text-3xl font-semibold tracking-tight">Blog</h1>
-          <p className="mt-2 text-muted-foreground">
-            {BLOG_POSTS.length} guides and tips for getting the most out of transcripts.
-          </p>
+          <p className="mt-2 text-muted-foreground">Guides and tips for getting the most out of transcripts.</p>
 
           <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {BLOG_POSTS.map((p) => {

@@ -91,9 +91,6 @@ export default async function BlogPostPage(props: Props) {
               <p className="mt-5 text-lg leading-relaxed text-muted-foreground sm:text-xl">
                 {post.excerpt}
               </p>
-              <p className="mt-4 text-sm text-muted-foreground border-l-2 border-primary/40 pl-4">
-                Written for GetTranscript readers who learn and work from video — transcripts, captions, and YouTube workflows.
-              </p>
             </header>
             <div className="relative mb-12 aspect-[16/9] w-full overflow-hidden rounded-2xl bg-muted shadow-md">
               <Image
