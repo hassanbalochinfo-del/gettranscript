@@ -5,15 +5,15 @@ import Script from "next/script"
 import { Analytics } from "@vercel/analytics/next"
 import { Toaster } from "@/components/ui/sonner"
 import { Providers } from "@/components/providers"
+import { ADSENSE_PUBLISHER_ID } from "@/lib/adsense/config"
+import { siteUrl } from "@/lib/seo"
 import "./globals.css"
 
 const _inter = Inter({ subsets: ["latin"] })
 const _geistMono = Geist_Mono({ subsets: ["latin"] })
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://gettranscript.com"
 const siteName = "GetTranscript"
 const siteDescription = "Get instant YouTube transcripts for free. Paste a YouTube link and extract clean transcripts in seconds. Copy, download, and use transcripts with timestamps. Works with YouTube videos and Shorts."
-const adSenseId = process.env.NEXT_PUBLIC_ADSENSE_ID || "ca-pub-1227520669715406"
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -105,7 +105,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <meta name="google-adsense-account" content="ca-pub-1227520669715406" />
+        <meta name="google-adsense-account" content={ADSENSE_PUBLISHER_ID} />
       </head>
       <body className={`font-sans antialiased`}>
         <Script
@@ -131,14 +131,6 @@ export default function RootLayout({
             `,
           }}
         />
-        {adSenseId ? (
-          <Script
-            id="adsense-script"
-            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adSenseId}`}
-            crossOrigin="anonymous"
-            strategy="afterInteractive"
-          />
-        ) : null}
         <Providers>
           {children}
           <Toaster />

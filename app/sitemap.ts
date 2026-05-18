@@ -1,36 +1,22 @@
 import { MetadataRoute } from "next"
 import { BLOG_POSTS } from "@/lib/blog/posts"
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://gettranscript.com"
+import { siteUrl } from "@/lib/seo"
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = siteUrl
-
-  // Static pages
-  const routes = [
-    "",
-    "/features",
-    "/blog",
-    "/contact",
-    "/privacy-policy",
-    "/terms-of-service",
-  ]
-
-  // Blog posts
-  const blogPosts = BLOG_POSTS.map((post) => post.slug)
+  const routes = ["", "/features", "/blog", "/about", "/contact", "/privacy-policy", "/terms-of-service"]
 
   const staticPages: MetadataRoute.Sitemap = routes.map((route) => ({
-    url: `${baseUrl}${route}`,
+    url: `${siteUrl}${route}`,
     lastModified: new Date(),
     changeFrequency: route === "" ? "daily" : "weekly",
-    priority: route === "" ? 1 : 0.8,
+    priority: route === "" ? 1 : route === "/about" ? 0.9 : 0.8,
   }))
 
-  const blogPages: MetadataRoute.Sitemap = blogPosts.map((slug) => ({
-    url: `${baseUrl}/blog/${slug}`,
-    lastModified: new Date(),
-    changeFrequency: "monthly",
-    priority: 0.6,
+  const blogPages: MetadataRoute.Sitemap = BLOG_POSTS.map((post) => ({
+    url: `${siteUrl}/blog/${post.slug}`,
+    lastModified: new Date(post.date),
+    changeFrequency: "monthly" as const,
+    priority: 0.7,
   }))
 
   return [...staticPages, ...blogPages]

@@ -1,6 +1,5 @@
 "use client"
 
-import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -39,10 +38,8 @@ export function UpgradeModal({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button asChild>
-            <Link href="/pricing" onClick={() => onOpenChange(false)}>
-              {UI_COPY.viewPlans}
-            </Link>
+          <Button disabled>
+            Plans paused
           </Button>
         </DialogFooter>
       </DialogContent>

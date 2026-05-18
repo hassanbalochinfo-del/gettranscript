@@ -2,7 +2,7 @@
  * SEO utility functions and constants
  */
 
-export const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://gettranscript.com"
+export const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://www.gettranscript.co"
 export const siteName = "GetTranscript"
 
 export function generateCanonicalUrl(path: string): string {

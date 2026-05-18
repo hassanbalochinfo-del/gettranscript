@@ -3,7 +3,7 @@ import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { FileText, CheckCircle, AlertCircle, Mail } from "lucide-react"
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://gettranscript.com"
+import { siteUrl } from "@/lib/seo"
 
 export const metadata: Metadata = {
   title: "Terms of Service - GetTranscript",

@@ -1,86 +1,26 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowRight, Zap, Copy, Download, Clock, Youtube, Check } from "lucide-react"
-import Link from "next/link"
+import { ArrowRight, Zap, Copy, Download, Clock, Youtube } from "lucide-react"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { toast } from "sonner"
 import { StructuredData } from "@/components/StructuredData"
-import { UI_COPY, PLAN_PRICES, PLAN_CREDITS } from "@/lib/constants"
-import { CheckoutButton } from "@/components/checkout-button"
-import { AdSlot } from "@/components/adsense/AdSlot"
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://gettranscript.com"
-
-const plans = [
-  {
-    name: "Starter",
-    price: PLAN_PRICES.starter,
-    credits: PLAN_CREDITS.starter,
-    features: UI_COPY.starterFeatures,
-    plan: "starter",
-    highlighted: false,
-  },
-  {
-    name: "Pro",
-    price: PLAN_PRICES.pro,
-    credits: PLAN_CREDITS.pro,
-    features: UI_COPY.proFeatures,
-    plan: "pro",
-    highlighted: true,
-  },
-  {
-    name: "Plus",
-    price: PLAN_PRICES.plus,
-    credits: PLAN_CREDITS.plus,
-    features: UI_COPY.plusFeatures,
-    plan: "plus",
-    highlighted: false,
-  },
-]
+import { siteUrl } from "@/lib/seo"
 
 export default function HomePage() {
   const router = useRouter()
   const [url, setUrl] = useState("")
-  const [showAdGate, setShowAdGate] = useState(false)
-  const [countdown, setCountdown] = useState(6)
-
-  const adSenseClient = process.env.NEXT_PUBLIC_ADSENSE_ID || process.env.NEXT_PUBLIC_ADSENSE_CLIENT
-  const rewardedAdSlot = process.env.NEXT_PUBLIC_ADSENSE_SLOT_REWARDED
-
-  useEffect(() => {
-    if (!showAdGate) return
-
-    setCountdown(6)
-    const timer = setInterval(() => {
-      setCountdown((prev) => (prev <= 1 ? 0 : prev - 1))
-    }, 1000)
-
-    return () => clearInterval(timer)
-  }, [showAdGate])
-
-  const proceedToTranscript = () => {
-    router.push(`/app/result?url=${encodeURIComponent(url)}`)
-  }
-
   const handleGetTranscript = () => {
     if (!url.trim()) {
       toast.error("Please enter a YouTube URL")
       return
     }
-
-    // If rewarded ad slot is configured, gate transcript behind ad view.
-    if (adSenseClient && rewardedAdSlot) {
-      setShowAdGate(true)
-      return
-    }
-
-    proceedToTranscript()
+    router.push(`/app/result?url=${encodeURIComponent(url)}`)
   }
 
   const structuredData = {
@@ -311,114 +251,10 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className="border-t border-border/60 bg-gradient-to-b from-background to-muted/20">
-          <div className="container mx-auto max-w-6xl px-4 py-16 sm:px-6">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">Pricing</h2>
-              <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
-                {UI_COPY.pricingSubhead}
-              </p>
-            </div>
-
-            <div className="grid gap-6 md:grid-cols-3 max-w-5xl mx-auto">
-              {plans.map((plan) => (
-                <Card
-                  key={plan.name}
-                  className={`relative flex flex-col transition-all hover:shadow-lg ${
-                    plan.highlighted
-                      ? "border-primary shadow-xl ring-2 ring-primary scale-105"
-                      : "border-border hover:border-border/80"
-                  }`}
-                >
-                  {plan.highlighted && (
-                    <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground">
-                      Most Popular
-                    </div>
-                  )}
-                  <CardHeader className="text-center">
-                    <CardTitle className="text-xl font-semibold">{plan.name}</CardTitle>
-                    <div className="mt-4 flex items-baseline justify-center gap-1">
-                      <span className="text-4xl font-bold">${plan.price}</span>
-                      <span className="text-muted-foreground">/month</span>
-                    </div>
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      {plan.credits} credits per month
-                    </p>
-                  </CardHeader>
-                  <CardContent className="flex flex-1 flex-col">
-                    <ul className="flex-1 space-y-3 mb-6">
-                      {plan.features.map((feature, idx) => (
-                        <li key={idx} className="flex items-start gap-3">
-                          <Check className="h-5 w-5 shrink-0 text-primary mt-0.5" />
-                          <span className="text-sm text-foreground">{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                    <CheckoutButton
-                      plan={plan.plan as any}
-                      className="w-full"
-                      variant={plan.highlighted ? "default" : "outline"}
-                      size="lg"
-                    >
-                      <span className="inline-flex items-center">
-                        {UI_COPY.getStarted}
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </span>
-                    </CheckoutButton>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
-            <div className="mt-12 text-center">
-              <Button variant="ghost" asChild>
-                <Link href="/pricing">
-                  View all plans and FAQs →
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </section>
-
         </main>
 
         <Footer />
       </div>
-
-      {showAdGate ? (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-          <div className="w-full max-w-2xl rounded-xl bg-background border border-border p-5 shadow-2xl">
-            <h3 className="text-lg font-semibold">Watch short ad to continue</h3>
-            <p className="mt-1 text-sm text-muted-foreground">
-              After this ad, your transcript will start automatically.
-            </p>
-
-            <div className="mt-4 rounded-lg border border-border/70 p-3 bg-muted/20 min-h-[160px]">
-              <AdSlot
-                client={adSenseClient}
-                slot={rewardedAdSlot}
-                className="w-full"
-                style={{ minHeight: "140px" }}
-              />
-            </div>
-
-            <div className="mt-4 flex items-center justify-end gap-2">
-              <Button variant="outline" onClick={() => setShowAdGate(false)}>
-                Cancel
-              </Button>
-              <Button
-                onClick={() => {
-                  setShowAdGate(false)
-                  proceedToTranscript()
-                }}
-                disabled={countdown > 0}
-              >
-                {countdown > 0 ? `Continue in ${countdown}s` : "Continue to transcript"}
-              </Button>
-            </div>
-          </div>
-        </div>
-      ) : null}
     </>
   )
 }

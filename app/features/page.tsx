@@ -5,8 +5,7 @@ import { Footer } from "@/components/footer"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Zap, Clock, Copy, Download, Youtube, Play } from "lucide-react"
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://gettranscript.com"
+import { siteUrl } from "@/lib/seo"
 
 export const metadata: Metadata = {
   title: "Features - GetTranscript",

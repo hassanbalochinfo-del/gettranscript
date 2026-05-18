@@ -12,7 +12,7 @@ export function Footer() {
               </div>
               <span className="text-lg font-semibold">GetTranscript</span>
             </div>
-            <p className="mt-3 text-sm text-muted-foreground">Fast, accurate video transcription powered by AI.</p>
+            <p className="mt-3 text-sm text-muted-foreground">Fast, free YouTube transcripts for study, research, and creators.</p>
           </div>
 
           <div>
@@ -26,6 +26,11 @@ export function Footer() {
               <li>
                 <Link href="/blog" className="text-muted-foreground hover:text-foreground">
                   Blog
+                </Link>
+              </li>
+              <li>
+                <Link href="/about" className="text-muted-foreground hover:text-foreground">
+                  About
                 </Link>
               </li>
               <li>
@@ -47,22 +52,6 @@ export function Footer() {
               <li>
                 <Link href="/terms-of-service" className="text-muted-foreground hover:text-foreground">
                   Terms of Service
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="mb-3 text-sm font-semibold text-foreground">Company</h4>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <Link href="/blog" className="text-muted-foreground hover:text-foreground">
-                  Blog
-                </Link>
-              </li>
-              <li>
-                <Link href="/contact" className="text-muted-foreground hover:text-foreground">
-                  Contact
                 </Link>
               </li>
             </ul>

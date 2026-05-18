@@ -1,6 +1,5 @@
 "use client"
 
-import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { UI_COPY } from "@/lib/constants"
@@ -45,8 +44,8 @@ export function UpgradeBanner({
           )}
         </div>
         <div className="flex items-center gap-2">
-          <Button asChild size="sm">
-            <Link href="/pricing">{UI_COPY.viewPlans}</Link>
+          <Button size="sm" disabled>
+            Plans paused
           </Button>
           {onDismiss && (
             <Button

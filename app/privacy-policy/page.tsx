@@ -4,7 +4,7 @@ import { Footer } from "@/components/footer"
 import { Shield, Lock, Eye, Server, FileText, Mail } from "lucide-react"
 import { Separator } from "@/components/ui/separator"
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://gettranscript.com"
+import { siteUrl } from "@/lib/seo"
 
 export const metadata: Metadata = {
   title: "Privacy Policy - GetTranscript",

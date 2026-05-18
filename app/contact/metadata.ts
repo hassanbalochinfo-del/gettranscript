@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://gettranscript.com"
+import { siteUrl } from "@/lib/seo"
 
 export const metadata: Metadata = {
   title: "Contact Us - GetTranscript",

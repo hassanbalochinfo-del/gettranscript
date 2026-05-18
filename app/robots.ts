@@ -1,6 +1,5 @@
 import { MetadataRoute } from "next"
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://gettranscript.com"
+import { siteUrl } from "@/lib/seo"
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -8,12 +7,20 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/api/", "/app/result", "/uploads/"],
+        disallow: [
+          "/api/",
+          "/app/result",
+          "/uploads/",
+          "/login",
+          "/signup",
+          "/pricing",
+          "/account",
+        ],
       },
       {
         userAgent: "Googlebot",
         allow: "/",
-        disallow: ["/api/", "/uploads/"],
+        disallow: ["/api/", "/app/result", "/uploads/", "/login", "/signup", "/pricing", "/account"],
       },
     ],
     sitemap: `${siteUrl}/sitemap.xml`,

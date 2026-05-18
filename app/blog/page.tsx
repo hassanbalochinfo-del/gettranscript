@@ -7,7 +7,7 @@ import { BLOG_POSTS } from "@/lib/blog/posts"
 import { getPostThumbnail } from "@/lib/blog/thumbnails"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://gettranscript.com"
+import { siteUrl } from "@/lib/seo"
 
 export const metadata: Metadata = {
   title: "Blog - GetTranscript",

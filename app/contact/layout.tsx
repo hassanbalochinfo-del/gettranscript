@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://gettranscript.com"
+import { AdSenseScript } from "@/components/adsense/AdSenseScript"
+import { siteUrl } from "@/lib/seo"
 
 export const metadata: Metadata = {
   title: "Contact Us - GetTranscript",
@@ -20,5 +20,10 @@ export default function ContactLayout({
 }: {
   children: React.ReactNode
 }) {
-  return children
+  return (
+    <>
+      <AdSenseScript />
+      {children}
+    </>
+  )
 }

@@ -70,9 +70,9 @@ export function AppSidebar() {
           className={cn("w-full text-muted-foreground", collapsed ? "justify-center px-2" : "justify-start")}
           asChild
         >
-          <Link href="/login">
+          <Link href="/">
             <LogOut className={cn("h-4 w-4", !collapsed && "mr-2")} />
-            {!collapsed && "Sign out"}
+            {!collapsed && "Home"}
           </Link>
         </Button>
 
