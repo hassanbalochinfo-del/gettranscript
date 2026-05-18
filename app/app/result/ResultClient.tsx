@@ -128,7 +128,6 @@ export default function ResultClient() {
   const [translating, setTranslating] = useState(false)
   const [selectedLanguage, setSelectedLanguage] = useState<string>("")
   const [pendingTranslateLang, setPendingTranslateLang] = useState<string>("es")
-  const [translateStatus, setTranslateStatus] = useState<string>("")
   const [summary, setSummary] = useState<string | null>(null)
   const [summarizing, setSummarizing] = useState(false)
   const [summaryTruncated, setSummaryTruncated] = useState(false)
@@ -153,7 +152,6 @@ export default function ResultClient() {
     const langLabel = TRANSLATE_LANGUAGES.find((l) => l.value === targetLang)?.label || targetLang
 
     setTranslating(true)
-    setTranslateStatus(`Translating to ${langLabel}…`)
 
     try {
       const res = await fetch("/api/translate", {
@@ -195,7 +193,6 @@ export default function ResultClient() {
       toast.error(message)
     } finally {
       setTranslating(false)
-      setTranslateStatus("")
     }
   }
 
@@ -229,7 +226,7 @@ export default function ResultClient() {
       if (data.ok && data.summary) {
         setSummary(data.summary)
         setSummaryTruncated(Boolean(data.truncated))
-        toast.success("Summary ready — scroll down to read it")
+        toast.success("Summary ready — open the AI Summary tab")
       } else {
         throw new Error("Invalid response from server")
       }
@@ -731,157 +728,104 @@ export default function ResultClient() {
                   </Card>
                 ) : null}
 
-                <div className="grid gap-4 md:grid-cols-2">
-                  <Card className="border-2 border-emerald-200 bg-emerald-50/50 shadow-sm">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-base flex items-center gap-2 text-gray-900">
-                        <Languages className="h-5 w-5 text-emerald-600" />
-                        Translate transcript
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <p className="text-sm text-gray-600 leading-relaxed">
-                        Read the video in another language. We translate in parallel chunks so long transcripts finish faster.
-                      </p>
-                      <div className="flex flex-col sm:flex-row gap-2">
-                        <Select
-                          value={pendingTranslateLang}
-                          onValueChange={setPendingTranslateLang}
-                          disabled={translating || !rawTranscript}
-                        >
-                          <SelectTrigger className="h-10 bg-white border-gray-300 flex-1">
-                            <SelectValue placeholder="Choose language" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {TRANSLATE_LANGUAGES.map((lang) => (
-                              <SelectItem key={lang.value} value={lang.value}>
-                                {lang.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <Button
-                          className="h-10 bg-emerald-600 hover:bg-emerald-700 text-white shrink-0"
-                          onClick={handleTranslate}
-                          disabled={translating || !rawTranscript}
-                        >
-                          {translating ? (
-                            <>
-                              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                              Translating…
-                            </>
-                          ) : (
-                            "Translate"
-                          )}
-                        </Button>
-                      </div>
-                      {translating && translateStatus ? (
-                        <p className="text-xs text-emerald-800 font-medium">{translateStatus}</p>
-                      ) : null}
-                      {translatedText && selectedLanguage ? (
-                        <div className="flex items-center justify-between gap-2 rounded-lg bg-white border border-emerald-200 px-3 py-2">
-                          <p className="text-xs text-gray-600">
-                            Showing{" "}
-                            <span className="font-medium text-gray-900">
-                              {TRANSLATE_LANGUAGES.find((l) => l.value === selectedLanguage)?.label ||
-                                selectedLanguage.toUpperCase()}
-                            </span>{" "}
-                            translation
-                          </p>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 text-emerald-700"
-                            onClick={() => {
-                              setTranslatedText(null)
-                              setSelectedLanguage("")
-                            }}
-                          >
-                            Show original
-                          </Button>
-                        </div>
-                      ) : null}
-                    </CardContent>
-                  </Card>
-
-                  <Card className="border-2 border-violet-200 bg-violet-50/40 shadow-sm">
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-base flex items-center gap-2 text-gray-900">
-                        <Sparkles className="h-5 w-5 text-violet-600" />
-                        Summarize video
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-3">
-                      <p className="text-sm text-gray-600 leading-relaxed">
-                        Get a plain-language recap: what the video is about, main points, and takeaways — so you can understand it without reading the full transcript.
-                      </p>
+                <Card className="bg-gray-50 border-gray-200 p-4">
+                  <div className="flex flex-col gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Select
+                        value={pendingTranslateLang}
+                        onValueChange={setPendingTranslateLang}
+                        disabled={translating || !rawTranscript}
+                      >
+                        <SelectTrigger className="h-9 w-[130px] bg-white border-gray-300 text-gray-900 text-sm">
+                          <SelectValue placeholder="Language" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {TRANSLATE_LANGUAGES.map((lang) => (
+                            <SelectItem key={lang.value} value={lang.value}>
+                              {lang.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <Button
-                        className="h-10 bg-violet-600 hover:bg-violet-700 text-white w-full sm:w-auto"
+                        variant="outline"
+                        size="sm"
+                        className="h-9 border-emerald-300 bg-white text-emerald-800 hover:bg-emerald-600 hover:border-emerald-600 hover:text-white"
+                        onClick={handleTranslate}
+                        disabled={translating || !rawTranscript}
+                      >
+                        {translating ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <>
+                            <Languages className="h-4 w-4 mr-1.5" />
+                            Translate
+                          </>
+                        )}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-9 border-violet-300 bg-white text-violet-800 hover:bg-violet-600 hover:border-violet-600 hover:text-white"
                         onClick={handleSummarize}
                         disabled={summarizing || !rawTranscript}
                       >
                         {summarizing ? (
-                          <>
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            Building summary…
-                          </>
-                        ) : summary ? (
-                          "Regenerate summary"
+                          <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (
-                          "Generate summary"
+                          <>
+                            <Sparkles className="h-4 w-4 mr-1.5" />
+                            Summarize
+                          </>
                         )}
                       </Button>
-                      {summary ? (
-                        <div className="rounded-lg border border-violet-200 bg-white p-4 max-h-[280px] overflow-y-auto">
-                          {summaryTruncated ? (
-                            <p className="text-xs text-amber-700 mb-3">
-                              This video is long — summary is based on the first part of the transcript.
-                            </p>
-                          ) : null}
-                          <SummaryBody text={summary} />
-                        </div>
-                      ) : null}
-                    </CardContent>
-                  </Card>
-                </div>
-
-                <Card className="bg-gray-50 border-gray-200 p-4">
-                  <div className="flex items-center justify-between gap-4 flex-wrap">
-                    <p className="text-gray-700 text-sm font-medium">Export</p>
-                    <div className="flex flex-wrap gap-2">
+                      <span className="hidden sm:block w-px h-6 bg-gray-300 mx-1" aria-hidden />
                       <Button
                         variant="outline"
                         size="sm"
-                        className="bg-white border-gray-300 text-gray-900 hover:bg-emerald-600 hover:border-emerald-500 hover:text-white transition-all"
+                        className="h-9 bg-white border-gray-300 text-gray-900 hover:bg-gray-100"
                         onClick={handleCopy}
                         disabled={!displayText}
                       >
-                        {copied ? <Check className="h-4 w-4 mr-2" /> : <Copy className="h-4 w-4 mr-2" />}
+                        {copied ? <Check className="h-4 w-4 mr-1.5" /> : <Copy className="h-4 w-4 mr-1.5" />}
                         {copied ? "Copied" : "Copy"}
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
-                        className="bg-white border-gray-300 text-gray-900 hover:bg-emerald-600 hover:border-emerald-500 hover:text-white transition-all"
+                        className="h-9 bg-white border-gray-300 text-gray-900 hover:bg-gray-100"
                         onClick={() => handleDownload("txt")}
                         disabled={!displayText}
                       >
-                        <Download className="h-4 w-4 mr-2" />
+                        <Download className="h-4 w-4 mr-1.5" />
                         TXT
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
-                        className="bg-white border-gray-300 text-gray-900 hover:bg-emerald-600 hover:border-emerald-500 hover:text-white transition-all"
+                        className="h-9 bg-white border-gray-300 text-gray-900 hover:bg-gray-100"
                         onClick={() => handleDownload("json")}
                         disabled={!displayText}
                       >
-                        <Download className="h-4 w-4 mr-2" />
+                        <Download className="h-4 w-4 mr-1.5" />
                         JSON
                       </Button>
                     </div>
+                    {translatedText && selectedLanguage ? (
+                      <button
+                        type="button"
+                        className="text-xs text-emerald-700 hover:underline w-fit"
+                        onClick={() => {
+                          setTranslatedText(null)
+                          setSelectedLanguage("")
+                        }}
+                      >
+                        Show original
+                      </button>
+                    ) : null}
                   </div>
                 </Card>
+
 
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-4">Content</h3>
@@ -959,9 +903,7 @@ export default function ResultClient() {
                             </div>
                           </div>
                         ) : (
-                          <p className="text-sm text-gray-500">
-                            Use the <strong>Summarize video</strong> card above to generate a readable recap.
-                          </p>
+                          <p className="text-sm text-gray-500">Click Summarize above to generate a summary.</p>
                         )}
                       </Card>
                     </TabsContent>
