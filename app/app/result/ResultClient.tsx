@@ -124,9 +124,10 @@ export default function ResultClient() {
   const [language, setLanguage] = useState<string>("")
   const [metadata, setMetadata] = useState<TranscriptMetadata | null>(null)
   const [copied, setCopied] = useState(false)
-  const [translatedText, setTranslatedText] = useState<string | null>(null)
+  const [translationCache, setTranslationCache] = useState<Record<string, string>>({})
+  const [activeTranslationLang, setActiveTranslationLang] = useState<string | null>(null)
+  const [showTranslated, setShowTranslated] = useState(false)
   const [translating, setTranslating] = useState(false)
-  const [selectedLanguage, setSelectedLanguage] = useState<string>("")
   const [pendingTranslateLang, setPendingTranslateLang] = useState<string>("es")
   const [summary, setSummary] = useState<string | null>(null)
   const [summarizing, setSummarizing] = useState(false)
@@ -142,14 +143,71 @@ export default function ResultClient() {
   }, [metadata])
 
   const displayText = useMemo(() => {
-    return translatedText || rawTranscript || ""
-  }, [translatedText, rawTranscript])
+    if (showTranslated && activeTranslationLang && translationCache[activeTranslationLang]) {
+      return translationCache[activeTranslationLang]
+    }
+    return rawTranscript || ""
+  }, [showTranslated, activeTranslationLang, translationCache, rawTranscript])
+
+  const hasCachedTranslation = Boolean(
+    activeTranslationLang && translationCache[activeTranslationLang]
+  )
+
+  const currentVideoId = videoId || extractYouTubeVideoId(url) || ""
+
+  // Clear translations when loading a different video
+  useEffect(() => {
+    setTranslationCache({})
+    setActiveTranslationLang(null)
+    setShowTranslated(false)
+  }, [currentVideoId])
+
+  // Restore cached translations from localStorage for this video
+  useEffect(() => {
+    if (!rawTranscript || !currentVideoId) return
+
+    const restored: Record<string, string> = {}
+    for (const lang of TRANSLATE_LANGUAGES) {
+      const saved = localStorage.getItem(`translate_${currentVideoId}_${lang.value}`)
+      if (!saved) continue
+      try {
+        const { text, timestamp } = JSON.parse(saved)
+        const maxAge = 24 * 60 * 60 * 1000
+        if (text && Date.now() - (timestamp || 0) < maxAge) {
+          restored[lang.value] = text
+        }
+      } catch {
+        /* ignore */
+      }
+    }
+    if (Object.keys(restored).length > 0) {
+      setTranslationCache((prev) => ({ ...restored, ...prev }))
+    }
+  }, [rawTranscript, currentVideoId])
+
+  const saveTranslationToCache = (lang: string, text: string) => {
+    setTranslationCache((prev) => ({ ...prev, [lang]: text }))
+    const vid = videoId || extractYouTubeVideoId(url)
+    if (vid) {
+      localStorage.setItem(
+        `translate_${vid}_${lang}`,
+        JSON.stringify({ text, timestamp: Date.now() })
+      )
+    }
+  }
 
   const handleTranslate = async () => {
     const targetLang = pendingTranslateLang
     if (!rawTranscript || translating || !targetLang) return
 
     const langLabel = TRANSLATE_LANGUAGES.find((l) => l.value === targetLang)?.label || targetLang
+
+    // Reuse cached translation — instant toggle, no API call
+    if (translationCache[targetLang]) {
+      setActiveTranslationLang(targetLang)
+      setShowTranslated(true)
+      return
+    }
 
     setTranslating(true)
 
@@ -176,14 +234,9 @@ export default function ResultClient() {
           : data.segments?.[0]?.text
 
       if (translated) {
-        setTranslatedText(translated)
-        setSelectedLanguage(targetLang)
-        if (videoId) {
-          localStorage.setItem(
-            `translate_${videoId}_${targetLang}`,
-            JSON.stringify({ text: translated, timestamp: Date.now() })
-          )
-        }
+        saveTranslationToCache(targetLang, translated)
+        setActiveTranslationLang(targetLang)
+        setShowTranslated(true)
         toast.success(`Translated to ${langLabel}`)
       } else {
         throw new Error("No translation returned")
@@ -566,11 +619,11 @@ export default function ResultClient() {
           {
             title: metadata?.title || title,
             videoId,
-            language: selectedLanguage || language,
+            language: showTranslated && activeTranslationLang ? activeTranslationLang : language,
             sourceUrl: url || undefined,
             transcript: displayText,
             metadata,
-            translated: translatedText !== null,
+            translated: showTranslated && Boolean(activeTranslationLang),
           },
           null,
           2
@@ -811,16 +864,13 @@ export default function ResultClient() {
                         JSON
                       </Button>
                     </div>
-                    {translatedText && selectedLanguage ? (
+                    {hasCachedTranslation ? (
                       <button
                         type="button"
                         className="text-xs text-emerald-700 hover:underline w-fit"
-                        onClick={() => {
-                          setTranslatedText(null)
-                          setSelectedLanguage("")
-                        }}
+                        onClick={() => setShowTranslated((v) => !v)}
                       >
-                        Show original
+                        {showTranslated ? "Show original" : "Show translated"}
                       </button>
                     ) : null}
                   </div>
@@ -836,7 +886,9 @@ export default function ResultClient() {
                         className="data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-gray-700"
                       >
                         <FileText className="h-4 w-4 mr-2" />
-                        {translatedText ? "Translated Transcript" : "Full Transcript"}
+                        {showTranslated && activeTranslationLang
+                          ? `Translated (${TRANSLATE_LANGUAGES.find((l) => l.value === activeTranslationLang)?.label || activeTranslationLang})`
+                          : "Full Transcript"}
                       </TabsTrigger>
                       <TabsTrigger
                         value="summary"
