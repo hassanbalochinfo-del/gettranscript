@@ -120,7 +120,7 @@ export const whyWeNeedSubtitlesPost: BlogPost = {
 
     <figure>
       <img
-        src="https://images.unsplash.com/photo-1574375927938-d5a98e8d0f9a?w=1400&q=80&auto=format&fit=crop"
+        src="https://images.unsplash.com/photo-1593784991095-a205069470b6?w=1400&q=80&auto=format&fit=crop"
         alt="Living room television showing streaming content with a remote on the table"
         loading="lazy"
         width="1400"
@@ -144,7 +144,7 @@ export const whyWeNeedSubtitlesPost: BlogPost = {
 
     <figure>
       <img
-        src="https://images.unsplash.com/photo-1434030216411-b2538041-0c0c?w=1400&q=80&auto=format&fit=crop"
+        src="https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1400&q=80&auto=format&fit=crop"
         alt="Student taking notes while watching an online lesson on a laptop"
         loading="lazy"
         width="1400"

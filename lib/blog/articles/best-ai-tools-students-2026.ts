@@ -53,7 +53,7 @@ export const bestAiToolsStudents2026Post: BlogPost = {
 
     <figure>
       <img
-        src="https://images.unsplash.com/photo-1456513080510-7bf93aeede0d?w=1400&q=80&auto=format&fit=crop"
+        src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=1400&q=80&auto=format&fit=crop"
         alt="Open laptop with notebook and pen on a desk for focused study"
         loading="lazy"
         width="1400"

@@ -153,7 +153,7 @@ export const comprehensibleInputEnglishPost: BlogPost = {
 
     <figure>
       <img
-        src="https://images.unsplash.com/photo-1456513080510-7bf93aeede0d?w=1400&q=80&auto=format&fit=crop"
+        src="https://images.unsplash.com/photo-1497366216548-37526070297c?w=1400&q=80&auto=format&fit=crop"
         alt="Open notebook and pen next to a laptop, suggesting note-taking from video lessons"
         loading="lazy"
         width="1400"

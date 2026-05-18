@@ -79,7 +79,7 @@ export default async function BlogPostPage(props: Props) {
               </p>
             </header>
             <div
-              className="prose prose-lg prose-neutral dark:prose-invert max-w-none prose-headings:font-semibold prose-headings:tracking-tight prose-h2:mt-14 prose-h2:mb-5 prose-h2:text-2xl prose-p:my-5 prose-p:leading-[1.9] prose-p:text-foreground/90 prose-li:my-2 prose-li:leading-relaxed prose-figure:my-12 prose-img:rounded-2xl prose-img:shadow-md prose-figcaption:mt-3 prose-figcaption:text-center prose-figcaption:text-sm prose-figcaption:text-muted-foreground prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-hr:my-14"
+              className="prose prose-lg prose-neutral dark:prose-invert max-w-none prose-headings:font-semibold prose-headings:tracking-tight prose-h2:mt-14 prose-h2:mb-5 prose-h2:text-2xl prose-p:my-5 prose-p:leading-[1.9] prose-p:text-foreground/90 prose-li:my-2 prose-li:leading-relaxed prose-figure:my-12 prose-img:w-full prose-img:h-auto prose-img:rounded-2xl prose-img:shadow-md prose-figcaption:mt-3 prose-figcaption:text-center prose-figcaption:text-sm prose-figcaption:text-muted-foreground prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-hr:my-14"
               dangerouslySetInnerHTML={{ __html: post.html }}
             />
           </article>

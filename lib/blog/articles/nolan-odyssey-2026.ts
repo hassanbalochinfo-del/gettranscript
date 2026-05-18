@@ -51,7 +51,7 @@ export const nolanOdyssey2026Post: BlogPost = {
 
     <figure>
       <img
-        src="https://images.unsplash.com/photo-1604076918502-0ab0939a6a9a?w=1400&q=80&auto=format&fit=crop"
+        src="https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=1400&q=80&auto=format&fit=crop"
         alt="Ancient Greek marble statue head, evoking classical mythology and epic history"
         loading="lazy"
         width="1400"
@@ -119,7 +119,7 @@ export const nolanOdyssey2026Post: BlogPost = {
 
     <figure>
       <img
-        src="https://images.unsplash.com/photo-1505118380887-9ddcda7c62c0?w=1400&q=80&auto=format&fit=crop"
+        src="https://images.unsplash.com/photo-1505142468610-359e7d316be0?w=1400&q=80&auto=format&fit=crop"
         alt="Dramatic ocean waves under a stormy sky, echoing Odysseus's perilous sea voyage"
         loading="lazy"
         width="1400"
@@ -142,7 +142,7 @@ export const nolanOdyssey2026Post: BlogPost = {
 
     <figure>
       <img
-        src="https://images.unsplash.com/photo-1615485925563-030d74d7a81e?w=1400&q=80&auto=format&fit=crop"
+        src="https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=1400&q=80&auto=format&fit=crop"
         alt="Ancient stone columns and ruins suggesting classical Greece"
         loading="lazy"
         width="1400"

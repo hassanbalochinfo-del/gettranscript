@@ -5,7 +5,7 @@ export const residencyWithoutMillionsPost: BlogPost = {
   title: "40 Countries That Can Give You Residency Without Investing Millions",
   date: "2026-05-18",
   excerpt:
-    "Golden visas are not the only path. Learn how financially independent, remote worker, and retirement visas let you live abroad with proof of income—not a million-dollar investment.",
+    "Country-by-country guide: residency routes without million-dollar investments, plus which paths can lead to citizenship and typical timelines.",
   html: `
     <p class="lead text-xl text-muted-foreground">
       Most people assume moving abroad is only for the rich—golden visas, luxury property, government donations, passports
@@ -15,7 +15,7 @@ export const residencyWithoutMillionsPost: BlogPost = {
 
     <figure>
       <img
-        src="https://images.unsplash.com/photo-1488085068339-322f5cee34b8?w=1400&q=80&auto=format&fit=crop"
+        src="https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1400&q=80&auto=format&fit=crop"
         alt="Passport and boarding pass on a map, symbolizing international travel and relocation planning"
         loading="lazy"
         width="1400"
@@ -76,18 +76,154 @@ export const residencyWithoutMillionsPost: BlogPost = {
       <figcaption>Photo: <a href="https://unsplash.com/@campaign_creators" rel="noopener noreferrer" target="_blank">Campaign Creators</a> / Unsplash</figcaption>
     </figure>
 
+    <h2>Country-by-country: residency, citizenship &amp; timelines</h2>
+
+    <p>
+      Below is a practical overview of <strong>40 countries</strong> often discussed for income-based residency (not golden visas).
+      Timelines are <strong>typical ranges</strong> for legal residence leading to citizenship—actual processing depends on nationality,
+      physical presence, language tests, background checks, and current law. Always confirm with official immigration sources.
+    </p>
+
+    <p><strong>Legend:</strong></p>
+    <ul>
+      <li><strong>Citizenship path?</strong> — whether ordinary naturalization is realistically available after residency (not investment citizenship)</li>
+      <li><strong>Typical timeline</strong> — approximate years of legal residence before applying for citizenship</li>
+    </ul>
+
+    <h3>Europe (13 countries)</h3>
+
+    <div class="not-prose my-8 overflow-x-auto">
+      <table class="w-full text-sm border-collapse min-w-[720px]">
+        <thead>
+          <tr class="border-b border-border bg-muted/30">
+            <th class="text-left py-3 px-2 font-semibold">Country</th>
+            <th class="text-left py-3 px-2 font-semibold">Common residency path</th>
+            <th class="text-left py-3 px-2 font-semibold">Citizenship path?</th>
+            <th class="text-left py-3 px-2 font-semibold">Typical timeline</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="border-b border-border/60"><td class="py-2 px-2 font-medium">Portugal</td><td class="py-2 px-2">D7 (passive income) / D8 (digital nomad)</td><td class="py-2 px-2">Yes</td><td class="py-2 px-2">PR ~5 yrs → citizenship ~5 yrs legal residence (Portuguese required)</td></tr>
+          <tr class="border-b border-border/60"><td class="py-2 px-2 font-medium">Spain</td><td class="py-2 px-2">Non-lucrative visa / autónomo (freelance)</td><td class="py-2 px-2">Yes</td><td class="py-2 px-2">PR ~5 yrs → citizenship ~10 yrs (2 yrs for some Ibero-American nationals)</td></tr>
+          <tr class="border-b border-border/60"><td class="py-2 px-2 font-medium">Italy</td><td class="py-2 px-2">Elective residence (income from abroad)</td><td class="py-2 px-2">Yes</td><td class="py-2 px-2">PR ~5 yrs → citizenship ~10 yrs (language &amp; integration)</td></tr>
+          <tr class="border-b border-border/60"><td class="py-2 px-2 font-medium">Greece</td><td class="py-2 px-2">Financially independent permit</td><td class="py-2 px-2">Yes</td><td class="py-2 px-2">PR ~5 yrs → citizenship ~7 yrs (Greek language)</td></tr>
+          <tr class="border-b border-border/60"><td class="py-2 px-2 font-medium">France</td><td class="py-2 px-2">Visitor / long-stay “sufficient resources”</td><td class="py-2 px-2">Yes</td><td class="py-2 px-2">PR ~5 yrs → citizenship ~5 yrs (strict presence &amp; integration)</td></tr>
+          <tr class="border-b border-border/60"><td class="py-2 px-2 font-medium">Cyprus</td><td class="py-2 px-2">Category F (self-sufficient)</td><td class="py-2 px-2">Limited</td><td class="py-2 px-2">Citizenship ~7 yrs residence (not typical fast route)</td></tr>
+          <tr class="border-b border-border/60"><td class="py-2 px-2 font-medium">Malta</td><td class="py-2 px-2">Ordinary residence / nomad routes</td><td class="py-2 px-2">Limited</td><td class="py-2 px-2">Naturalization often ~5+ yrs; investment routes separate</td></tr>
+          <tr class="border-b border-border/60"><td class="py-2 px-2 font-medium">Ireland</td><td class="py-2 px-2">Stamp 0 (retirees) / employment permit</td><td class="py-2 px-2">Yes</td><td class="py-2 px-2">Citizenship ~5 yrs reckonable residence</td></tr>
+          <tr class="border-b border-border/60"><td class="py-2 px-2 font-medium">Austria</td><td class="py-2 px-2">Settlement / Red-White-Red (skilled)</td><td class="py-2 px-2">Yes</td><td class="py-2 px-2">Citizenship ~10 yrs (German, integration)</td></tr>
+          <tr class="border-b border-border/60"><td class="py-2 px-2 font-medium">Switzerland</td><td class="py-2 px-2">Permit B (employment / self-employed)</td><td class="py-2 px-2">Yes</td><td class="py-2 px-2">Citizenship ~10 yrs (canton rules, integration)</td></tr>
+          <tr class="border-b border-border/60"><td class="py-2 px-2 font-medium">Germany</td><td class="py-2 px-2">Freelance / self-employment visa</td><td class="py-2 px-2">Yes</td><td class="py-2 px-2">PR ~5 yrs → citizenship ~8 yrs (or ~6 with integration course)</td></tr>
+          <tr class="border-b border-border/60"><td class="py-2 px-2 font-medium">Czech Republic</td><td class="py-2 px-2">Zivno (trade license) / employee card</td><td class="py-2 px-2">Yes</td><td class="py-2 px-2">PR ~5 yrs → citizenship ~10 yrs (Czech language)</td></tr>
+          <tr><td class="py-2 px-2 font-medium">Montenegro</td><td class="py-2 px-2">Temporary residence (work / company / property)</td><td class="py-2 px-2">Yes</td><td class="py-2 px-2">PR ~5 yrs → citizenship ~10 yrs (conditions apply)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="text-sm text-muted-foreground">
+      Europe note: strong infrastructure, but tax residency can tax worldwide income. Cyprus/Malta “low tax” depends on income type—get professional advice.
+    </p>
+
+    <h3>Asia &amp; Middle East (6 countries)</h3>
+
+    <div class="not-prose my-8 overflow-x-auto">
+      <table class="w-full text-sm border-collapse min-w-[720px]">
+        <thead>
+          <tr class="border-b border-border bg-muted/30">
+            <th class="text-left py-3 px-2 font-semibold">Country</th>
+            <th class="text-left py-3 px-2 font-semibold">Common residency path</th>
+            <th class="text-left py-3 px-2 font-semibold">Citizenship path?</th>
+            <th class="text-left py-3 px-2 font-semibold">Typical timeline</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="border-b border-border/60"><td class="py-2 px-2 font-medium">Thailand</td><td class="py-2 px-2">LTR visa / retirement / Elite</td><td class="py-2 px-2">Very difficult</td><td class="py-2 px-2">Naturalization ~10+ yrs; rarely pursued by foreigners</td></tr>
+          <tr class="border-b border-border/60"><td class="py-2 px-2 font-medium">Malaysia</td><td class="py-2 px-2">MM2H (long-stay) / DE Rantau (nomad)</td><td class="py-2 px-2">Very difficult</td><td class="py-2 px-2">Citizenship ~10+ yrs; strict requirements</td></tr>
+          <tr class="border-b border-border/60"><td class="py-2 px-2 font-medium">Philippines</td><td class="py-2 px-2">SRRV (retirement)</td><td class="py-2 px-2">Very difficult</td><td class="py-2 px-2">Naturalization ~10 yrs; not common for most expats</td></tr>
+          <tr class="border-b border-border/60"><td class="py-2 px-2 font-medium">Indonesia</td><td class="py-2 px-2">Second Home / KITAS (remote business)</td><td class="py-2 px-2">Very difficult</td><td class="py-2 px-2">Citizenship ~5+ yrs on paper; approval rare</td></tr>
+          <tr class="border-b border-border/60"><td class="py-2 px-2 font-medium">Vietnam</td><td class="py-2 px-2">Temporary residence (work / business)</td><td class="py-2 px-2">Very difficult</td><td class="py-2 px-2">Citizenship not a realistic goal for most</td></tr>
+          <tr><td class="py-2 px-2 font-medium">UAE</td><td class="py-2 px-2">Remote work / freelancer / green visa</td><td class="py-2 px-2">Extremely limited</td><td class="py-2 px-2">Citizenship by exception only; residency renewals typical</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="text-sm text-muted-foreground">
+      Asia is excellent for lifestyle and geoarbitrage. If a <strong>second passport</strong> is the goal, plan residency here as long-term living—not citizenship.
+    </p>
+
+    <h3>Latin America (18 countries)</h3>
+
+    <p>
+      This region often offers the <strong>most realistic citizenship paths</strong> for ordinary residents without million-dollar investments.
+    </p>
+
+    <div class="not-prose my-8 overflow-x-auto">
+      <table class="w-full text-sm border-collapse min-w-[720px]">
+        <thead>
+          <tr class="border-b border-border bg-muted/30">
+            <th class="text-left py-3 px-2 font-semibold">Country</th>
+            <th class="text-left py-3 px-2 font-semibold">Common residency path</th>
+            <th class="text-left py-3 px-2 font-semibold">Citizenship path?</th>
+            <th class="text-left py-3 px-2 font-semibold">Typical timeline</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="border-b border-border/60"><td class="py-2 px-2 font-medium">Argentina</td><td class="py-2 px-2">Rentista / proof of income</td><td class="py-2 px-2">Yes</td><td class="py-2 px-2">Citizenship ~2 yrs legal residence (real presence required)</td></tr>
+          <tr class="border-b border-border/60"><td class="py-2 px-2 font-medium">Mexico</td><td class="py-2 px-2">Temporary resident (economic solvency)</td><td class="py-2 px-2">Yes</td><td class="py-2 px-2">PR ~4 yrs → citizenship ~5 yrs total residence</td></tr>
+          <tr class="border-b border-border/60"><td class="py-2 px-2 font-medium">Panama</td><td class="py-2 px-2">Pensionado / Friendly Nations</td><td class="py-2 px-2">Yes</td><td class="py-2 px-2">PR ~2 yrs → citizenship ~5 yrs (territorial tax rules vary)</td></tr>
+          <tr class="border-b border-border/60"><td class="py-2 px-2 font-medium">Paraguay</td><td class="py-2 px-2">Residency by deposit / income proof</td><td class="py-2 px-2">Yes</td><td class="py-2 px-2">Citizenship ~3 yrs (often cited as relatively fast)</td></tr>
+          <tr class="border-b border-border/60"><td class="py-2 px-2 font-medium">Uruguay</td><td class="py-2 px-2">Proof of income / rentista</td><td class="py-2 px-2">Yes</td><td class="py-2 px-2">Citizenship ~3–5 yrs (physical presence matters)</td></tr>
+          <tr class="border-b border-border/60"><td class="py-2 px-2 font-medium">Dominican Republic</td><td class="py-2 px-2">Pensioner / investor-lite residency</td><td class="py-2 px-2">Yes</td><td class="py-2 px-2">Citizenship ~2 yrs residence (often marketed; verify rules)</td></tr>
+          <tr class="border-b border-border/60"><td class="py-2 px-2 font-medium">Costa Rica</td><td class="py-2 px-2">Pensionado / rentista</td><td class="py-2 px-2">Yes</td><td class="py-2 px-2">PR ~3 yrs → citizenship ~7 yrs</td></tr>
+          <tr class="border-b border-border/60"><td class="py-2 px-2 font-medium">Colombia</td><td class="py-2 px-2">M visa (pension / income) / V visa</td><td class="py-2 px-2">Yes</td><td class="py-2 px-2">PR ~5 yrs → citizenship ~5 yrs (Spanish test)</td></tr>
+          <tr class="border-b border-border/60"><td class="py-2 px-2 font-medium">Ecuador</td><td class="py-2 px-2">Pensioner / rentista visa</td><td class="py-2 px-2">Yes</td><td class="py-2 px-2">PR ~2 yrs → citizenship ~3 yrs</td></tr>
+          <tr class="border-b border-border/60"><td class="py-2 px-2 font-medium">Brazil</td><td class="py-2 px-2">Retirement / passive income visa</td><td class="py-2 px-2">Yes</td><td class="py-2 px-2">PR ~4 yrs → citizenship ~4 yrs (Portuguese)</td></tr>
+          <tr class="border-b border-border/60"><td class="py-2 px-2 font-medium">Chile</td><td class="py-2 px-2">Rentista / work / independent</td><td class="py-2 px-2">Yes</td><td class="py-2 px-2">PR ~5 yrs → citizenship ~5 yrs</td></tr>
+          <tr class="border-b border-border/60"><td class="py-2 px-2 font-medium">Peru</td><td class="py-2 px-2">Rentista / independent visa</td><td class="py-2 px-2">Yes</td><td class="py-2 px-2">Citizenship ~2 yrs residence (verify current law)</td></tr>
+          <tr class="border-b border-border/60"><td class="py-2 px-2 font-medium">Belize</td><td class="py-2 px-2">QRP (Qualified Retired Persons)</td><td class="py-2 px-2">Limited</td><td class="py-2 px-2">Citizenship ~5 yrs; QRP does not lead directly</td></tr>
+          <tr class="border-b border-border/60"><td class="py-2 px-2 font-medium">Barbados</td><td class="py-2 px-2">Welcome Stamp (12-month remote)</td><td class="py-2 px-2">No</td><td class="py-2 px-2">Temporary only—not a citizenship route</td></tr>
+          <tr class="border-b border-border/60"><td class="py-2 px-2 font-medium">Guatemala</td><td class="py-2 px-2">Rentista / proof of income</td><td class="py-2 px-2">Yes</td><td class="py-2 px-2">Citizenship ~5 yrs continuous residence</td></tr>
+          <tr class="border-b border-border/60"><td class="py-2 px-2 font-medium">Honduras</td><td class="py-2 px-2">Retirement / income residency</td><td class="py-2 px-2">Yes</td><td class="py-2 px-2">Citizenship ~5 yrs</td></tr>
+          <tr class="border-b border-border/60"><td class="py-2 px-2 font-medium">Nicaragua</td><td class="py-2 px-2">Pensioner / income proof</td><td class="py-2 px-2">Yes</td><td class="py-2 px-2">Citizenship ~4 yrs (check current political climate)</td></tr>
+          <tr><td class="py-2 px-2 font-medium">Venezuela</td><td class="py-2 px-2">Varies; instability affects applications</td><td class="py-2 px-2">Uncertain</td><td class="py-2 px-2">Not recommended without expert local advice</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Africa (3 countries)</h3>
+
+    <div class="not-prose my-8 overflow-x-auto">
+      <table class="w-full text-sm border-collapse min-w-[720px]">
+        <thead>
+          <tr class="border-b border-border bg-muted/30">
+            <th class="text-left py-3 px-2 font-semibold">Country</th>
+            <th class="text-left py-3 px-2 font-semibold">Common residency path</th>
+            <th class="text-left py-3 px-2 font-semibold">Citizenship path?</th>
+            <th class="text-left py-3 px-2 font-semibold">Typical timeline</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="border-b border-border/60"><td class="py-2 px-2 font-medium">South Africa</td><td class="py-2 px-2">Business / critical skills / remote (case-by-case)</td><td class="py-2 px-2">Yes</td><td class="py-2 px-2">PR ~5 yrs → citizenship ~5 yrs (presence rules)</td></tr>
+          <tr class="border-b border-border/60"><td class="py-2 px-2 font-medium">Mauritius</td><td class="py-2 px-2">Occupation / self-employed / retiree permit</td><td class="py-2 px-2">Yes</td><td class="py-2 px-2">PR ~3 yrs → citizenship ~8+ yrs (not automatic)</td></tr>
+          <tr><td class="py-2 px-2 font-medium">Kenya</td><td class="py-2 px-2">Class D work permit / business</td><td class="py-2 px-2">Difficult</td><td class="py-2 px-2">Citizenship ~7 yrs; approval not guaranteed</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>Quick summary: best regions for a passport goal</h3>
+
+    <ul>
+      <li><strong>Fastest often cited:</strong> Argentina (~2 yrs), Dominican Republic (~2 yrs), Paraguay (~3 yrs), Ecuador (~3 yrs), Peru (~2 yrs on paper)</li>
+      <li><strong>Solid mid-range:</strong> Mexico, Panama, Uruguay, Brazil, Colombia (~5 yrs)</li>
+      <li><strong>Europe (slower but strong passports):</strong> Portugal, France, Ireland (~5 yrs); Spain, Italy, Germany (~8–10 yrs)</li>
+      <li><strong>Weak citizenship odds:</strong> Thailand, Malaysia, UAE, most Asian nomad visas; Barbados Welcome Stamp (temporary only)</li>
+    </ul>
+
     <h2>Europe: stable, beautiful—not always cheap</h2>
 
     <p>
-      Portugal, Spain, Italy, Greece, France, Cyprus, Malta, Ireland, Austria, Switzerland, and Germany are often discussed for
-      financially independent or long-stay options. Europe offers infrastructure, healthcare, culture, and safety—but also
-      <strong>tax complexity</strong> and higher living costs.
-    </p>
-
-    <p>
-      Becoming tax resident in many Western European countries can mean worldwide income is taxed at higher rates.
-      “Low-tax” reputations (Cyprus, Malta, Ireland) depend on income type, remittance rules, and structure—online hype often oversimplifies.
-      Europe suits people who value stability and lifestyle over the absolute lowest tax bill.
+      Use the Europe table above for per-country paths. In general, Europe offers infrastructure and EU mobility (where applicable) but
+      higher taxes and longer citizenship waits than much of Latin America.
     </p>
 
     <figure>
@@ -115,7 +251,7 @@ export const residencyWithoutMillionsPost: BlogPost = {
 
     <figure>
       <img
-        src="https://images.unsplash.com/photo-1552465011-b4e21bf6e79d?w=1400&q=80&auto=format&fit=crop"
+        src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1400&q=80&auto=format&fit=crop"
         alt="Tropical beach and palm trees in Southeast Asia"
         loading="lazy"
         width="1400"
@@ -140,7 +276,7 @@ export const residencyWithoutMillionsPost: BlogPost = {
 
     <figure>
       <img
-        src="https://images.unsplash.com/photo-1518105770140-e067423056ac?w=1400&q=80&auto=format&fit=crop"
+        src="https://images.unsplash.com/photo-1518548419970-58e3b4079ab2?w=1400&q=80&auto=format&fit=crop"
         alt="Colorful colonial buildings on a hillside in Latin America"
         loading="lazy"
         width="1400"
@@ -159,7 +295,7 @@ export const residencyWithoutMillionsPost: BlogPost = {
 
     <figure>
       <img
-        src="https://images.unsplash.com/photo-1580060839134-75a533e27e1f?w=1400&q=80&auto=format&fit=crop"
+        src="https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=1400&q=80&auto=format&fit=crop"
         alt="Coastal city view with mountains, suggesting Cape Town style scenery"
         loading="lazy"
         width="1400"

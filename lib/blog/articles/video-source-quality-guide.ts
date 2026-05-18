@@ -204,7 +204,7 @@ export const videoSourceQualityGuide: BlogPost = {
 
     <figure>
       <img
-        src="https://images.unsplash.com/photo-1574375927938-d5a98e8d0f9a?w=1200&q=80&auto=format&fit=crop"
+        src="https://images.unsplash.com/photo-1593784991095-a205069470b6?w=1200&q=80&auto=format&fit=crop"
         alt="Living room TV displaying a streaming interface with remote control nearby"
         loading="lazy"
         width="1200"
