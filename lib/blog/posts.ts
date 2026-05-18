@@ -1,3 +1,6 @@
+import { picassoTimelinePost } from "./articles/picasso-timeline"
+import { imaxCameraPost } from "./articles/imax-camera"
+import { journalismNewsPost } from "./articles/journalism-news"
 import { ramPricesHighPost } from "./articles/ram-prices-high"
 import { solarGreenEnergyPost } from "./articles/solar-green-energy"
 import { boredomBenefitsPost } from "./articles/boredom-benefits"
@@ -25,6 +28,9 @@ export type BlogPost = {
 }
 
 export const BLOG_POSTS: BlogPost[] = [
+  picassoTimelinePost,
+  imaxCameraPost,
+  journalismNewsPost,
   ramPricesHighPost,
   solarGreenEnergyPost,
   boredomBenefitsPost,
