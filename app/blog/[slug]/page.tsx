@@ -2,7 +2,9 @@ import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
+import Image from "next/image"
 import { getPostBySlug } from "@/lib/blog/posts"
+import { getPostThumbnail } from "@/lib/blog/thumbnails"
 import { StructuredData } from "@/components/StructuredData"
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://gettranscript.com"
@@ -19,6 +21,8 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     }
   }
 
+  const thumb = getPostThumbnail(post)
+
   return {
     title: post.title,
     description: post.excerpt,
@@ -28,6 +32,13 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
       url: `${siteUrl}/blog/${slug}`,
       type: "article",
       publishedTime: post.date,
+      images: [{ url: thumb.src, width: 800, height: 450, alt: thumb.alt }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: post.title,
+      description: post.excerpt,
+      images: [thumb.src],
     },
     alternates: {
       canonical: `${siteUrl}/blog/${slug}`,
@@ -40,11 +51,14 @@ export default async function BlogPostPage(props: Props) {
   const post = getPostBySlug(slug)
   if (!post) return notFound()
 
+  const thumb = getPostThumbnail(post)
+
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
     headline: post.title,
     description: post.excerpt,
+    image: thumb.src,
     datePublished: post.date,
     author: {
       "@type": "Organization",
@@ -78,6 +92,16 @@ export default async function BlogPostPage(props: Props) {
                 {post.excerpt}
               </p>
             </header>
+            <div className="relative mb-12 aspect-[16/9] w-full overflow-hidden rounded-2xl bg-muted shadow-md">
+              <Image
+                src={thumb.src}
+                alt={thumb.alt}
+                fill
+                priority
+                className="object-cover"
+                sizes="(max-width: 896px) 100vw, 896px"
+              />
+            </div>
             <div
               className="prose prose-lg prose-neutral dark:prose-invert max-w-none prose-headings:font-semibold prose-headings:tracking-tight prose-h2:mt-14 prose-h2:mb-5 prose-h2:text-2xl prose-p:my-5 prose-p:leading-[1.9] prose-p:text-foreground/90 prose-li:my-2 prose-li:leading-relaxed prose-figure:my-12 prose-img:w-full prose-img:h-auto prose-img:rounded-2xl prose-img:shadow-md prose-figcaption:mt-3 prose-figcaption:text-center prose-figcaption:text-sm prose-figcaption:text-muted-foreground prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-hr:my-14"
               dangerouslySetInnerHTML={{ __html: post.html }}

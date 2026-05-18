@@ -6,6 +6,8 @@ export const neuromorphicComputingPost: BlogPost = {
   date: "2026-05-21",
   excerpt:
     "Scientists taught human neurons to play Pong in 2022. Neuromorphic computing could replace rigid silicon chips with brain-like systems that learn, adapt, and use a fraction of the power.",
+  thumbnail: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=1400&q=80&auto=format&fit=crop",
+  thumbnailAlt: "Brain scan visualization representing biological neural networks",
   html: `
     <p class="lead text-xl text-muted-foreground">
       What if the next great computer wasn't made of silicon? In 2022, scientists taught a living collection of human neurons to play the video game Pong. There was no keyboard or controller. The cells simply learned to hit the ball more often through electrical feedback. This experiment shows the potential of neuromorphic computing, a shift in design that moves us away from the rigid chips we've used for decades. We are looking at a future where machines learn and adapt more like a human brain than a calculator.

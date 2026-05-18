@@ -1,8 +1,10 @@
 import type { Metadata } from "next"
+import Image from "next/image"
 import Link from "next/link"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { BLOG_POSTS } from "@/lib/blog/posts"
+import { getPostThumbnail } from "@/lib/blog/thumbnails"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://gettranscript.com"
@@ -29,20 +31,36 @@ export default function BlogIndexPage() {
           <h1 className="text-3xl font-semibold tracking-tight">Blog</h1>
           <p className="mt-2 text-muted-foreground">Guides and tips for getting the most out of transcripts.</p>
 
-          <div className="mt-8 grid gap-4 md:grid-cols-2">
-            {BLOG_POSTS.map((p) => (
-              <Link key={p.slug} href={`/blog/${p.slug}`} className="block">
-                <Card className="border-border/60 hover:bg-muted/20 transition-colors">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base">{p.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-sm text-muted-foreground">
-                    <div className="text-xs text-muted-foreground">{p.date}</div>
-                    <p className="mt-2">{p.excerpt}</p>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
+          <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {BLOG_POSTS.map((p) => {
+              const thumb = getPostThumbnail(p)
+              return (
+                <Link key={p.slug} href={`/blog/${p.slug}`} className="group block h-full">
+                  <Card className="h-full overflow-hidden border-border/60 transition-colors hover:bg-muted/20">
+                    <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
+                      <Image
+                        src={thumb.src}
+                        alt={thumb.alt}
+                        fill
+                        className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      />
+                    </div>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="line-clamp-2 text-base leading-snug group-hover:text-primary">
+                        {p.title}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-sm text-muted-foreground">
+                      <time dateTime={p.date} className="text-xs text-muted-foreground">
+                        {p.date}
+                      </time>
+                      <p className="mt-2 line-clamp-3">{p.excerpt}</p>
+                    </CardContent>
+                  </Card>
+                </Link>
+              )
+            })}
           </div>
         </div>
       </main>
@@ -50,4 +68,3 @@ export default function BlogIndexPage() {
     </div>
   )
 }
-

@@ -6,6 +6,8 @@ export const boredomBenefitsPost: BlogPost = {
   date: "2026-05-27",
   excerpt:
     "We reach for our phones the second silence appears—but psychologists say boredom activates the brain's default mode network, where reflection, creativity, and meaning actually begin.",
+  thumbnail: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=1400&q=80&auto=format&fit=crop",
+  thumbnailAlt: "Person scrolling on a smartphone during a quiet moment of downtime",
   html: `
     <p class="lead text-xl text-muted-foreground">
       Most people hate boredom. The moment there is even a few seconds of silence, we immediately reach for our phones. Waiting at a traffic light, standing in line, sitting alone, walking somewhere, eating quietly, or even resting for a moment now feels uncomfortable without constant stimulation. Social media, videos, podcasts, music, notifications, and endless scrolling have trained our brains to avoid silence almost completely. Modern life made boredom feel like a problem that must be fixed instantly. But according to psychologists and researchers, constantly escaping boredom may actually be harming our mental health far more than we realize. Your source explains that boredom activates something in the brain called the "default mode network," a mental state where the brain starts reflecting, wandering, and thinking more deeply about life, meaning, relationships, goals, and emotions.

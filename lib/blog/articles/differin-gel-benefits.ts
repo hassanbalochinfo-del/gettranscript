@@ -6,6 +6,8 @@ export const differinGelBenefitsPost: BlogPost = {
   date: "2026-05-19",
   excerpt:
     "Differin Gel (adapalene) is one of the most trusted topical retinoids for acne. Here are five science-backed benefits, how to use it safely, and what to expect.",
+  thumbnail: "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=1400&q=80&auto=format&fit=crop",
+  thumbnailAlt: "Skincare products arranged on a clean bathroom shelf",
   html: `
     <p class="lead text-xl text-muted-foreground">
       If you have dealt with stubborn breakouts, clogged pores, or uneven skin texture, you have probably heard about

@@ -6,6 +6,8 @@ export const whyWeNeedSubtitlesPost: BlogPost = {
   date: "2026-05-14",
   excerpt:
     "From TikTok to Netflix, captions went from an accessibility feature to the default way millions of people watch video—here’s why, and what it means for creators.",
+  thumbnail: "https://images.unsplash.com/photo-1611162616475-46b635cb6868?w=1400&q=80&auto=format&fit=crop",
+  thumbnailAlt: "Person holding a smartphone while watching a video in a casual setting",
   html: `
     <p class="lead text-xl text-muted-foreground">
       A strange shift happened over the last decade: millions of people who hear perfectly well now feel uncomfortable

@@ -6,6 +6,8 @@ export const ramPricesHighPost: BlogPost = {
   date: "2026-05-29",
   excerpt:
     "That 32GB DDR5 kit you bookmarked last year? It probably costs nearly double now. The spike is not random—memory makers are chasing AI money, and PC builders are paying for it.",
+  thumbnail: "https://images.unsplash.com/photo-1591488320449-011701bb6704?w=1400&q=80&auto=format&fit=crop",
+  thumbnailAlt: "Computer hardware components including memory modules inside a PC build",
   html: `
     <p class="lead text-xl text-muted-foreground">
       If you tried to upgrade your PC lately, you already know something feels off. A 32GB DDR5 kit that used to sit around eighty or ninety dollars on sale can now push well past a hundred and fifty, sometimes higher depending on speed and brand. Sixteen gigabyte sticks that felt like impulse buys in 2023 now make you pause. Reddit threads are full of people asking whether they should buy now or wait, and the honest answer from most builders is: nobody is sure, but prices are not coming down tomorrow. This is not the same story as the 2020 GPU shortage, where scalpers and crypto miners made everything chaotic overnight. RAM prices are climbing for a more boring, more structural reason. The companies that make memory chips—Micron, SK Hynix, Samsung—have found a customer that pays more, orders more, and will keep ordering for years. That customer is AI infrastructure.

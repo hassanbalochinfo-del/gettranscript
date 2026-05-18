@@ -7,6 +7,8 @@ export const videoSourceQualityGuide: BlogPost = {
   date: "2026-05-13",
   excerpt:
     "Learn how theatrical DCP, Blu-ray, Remux, streaming, and camera recordings differ in bitrate, color, HDR, and audio—and which format fits your setup.",
+  thumbnail: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1200&q=80&auto=format&fit=crop",
+  thumbnailAlt: "Empty movie theater with rows of red seats facing a large cinema screen",
   html: `
     <p class="lead">
       Not every way of watching a movie delivers the same picture or sound. A theater screening, a UHD Blu-ray disc,

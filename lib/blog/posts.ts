@@ -25,6 +25,9 @@ export type BlogPost = {
   date: string
   excerpt: string
   html: string
+  /** Hero / card image (falls back to first image in html) */
+  thumbnail?: string
+  thumbnailAlt?: string
 }
 
 export const BLOG_POSTS: BlogPost[] = [
@@ -53,6 +56,8 @@ export const BLOG_POSTS: BlogPost[] = [
     title: "How to Get a YouTube Transcript Instantly",
     date: "2025-01-01",
     excerpt: "Paste a YouTube link, enable timestamps, and download a clean transcript in seconds.",
+    thumbnail: "https://images.unsplash.com/photo-1611162616475-46b635cb6868?w=1400&q=80&auto=format&fit=crop",
+    thumbnailAlt: "YouTube video on a screen for transcript extraction",
     html: `
       <p>Getting a transcript shouldn’t be a hassle. With GetTranscript, you can paste a YouTube video URL and fetch a clean transcript instantly.</p>
       <h2>Tips</h2>
@@ -68,6 +73,8 @@ export const BLOG_POSTS: BlogPost[] = [
     title: "Why Timestamps Make Transcripts More Useful",
     date: "2025-01-02",
     excerpt: "Timestamps help you jump to the exact moment and keep quotes verifiable.",
+    thumbnail: "https://images.unsplash.com/photo-1593784991095-a205069470b6?w=1400&q=80&auto=format&fit=crop",
+    thumbnailAlt: "Video editing timeline representing transcript timestamps",
     html: `
       <p>Timestamps make transcripts actionable: you can cite exact moments, navigate quickly, and keep notes aligned to the video.</p>
       <p>Enable the <em>Include timestamps</em> toggle to get segment-level timing when available.</p>

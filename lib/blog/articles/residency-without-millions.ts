@@ -6,6 +6,8 @@ export const residencyWithoutMillionsPost: BlogPost = {
   date: "2026-05-18",
   excerpt:
     "Country-by-country guide: residency routes without million-dollar investments, plus which paths can lead to citizenship and typical timelines.",
+  thumbnail: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1400&q=80&auto=format&fit=crop",
+  thumbnailAlt: "Passport and boarding pass on a map, symbolizing international travel and relocation planning",
   html: `
     <p class="lead text-xl text-muted-foreground">
       Most people assume moving abroad is only for the rich—golden visas, luxury property, government donations, passports

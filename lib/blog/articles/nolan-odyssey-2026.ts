@@ -6,6 +6,8 @@ export const nolanOdyssey2026Post: BlogPost = {
   date: "2026-05-16",
   excerpt:
     "After Oppenheimer, Christopher Nolan turns to Homer’s epic with IMAX scale, a star-studded cast, and a story built on survival, memory, and the long road home.",
+  thumbnail: "https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=1400&q=80&auto=format&fit=crop",
+  thumbnailAlt: "Professional cinema camera on a film set, suggesting large-scale movie production",
   html: `
     <p class="lead text-xl text-muted-foreground">
       Christopher Nolan’s next film is not a superhero movie, not a sci-fi puzzle, and not another historical biopic.

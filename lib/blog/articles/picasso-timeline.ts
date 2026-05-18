@@ -6,6 +6,8 @@ export const picassoTimelinePost: BlogPost = {
   date: "2026-05-30",
   excerpt:
     "Picasso did not paint one way—he reinvented himself every decade. A chronological walk through the periods, breakthroughs, and masterpieces that made him the most discussed artist of the twentieth century.",
+  thumbnail: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=1400&q=80&auto=format&fit=crop",
+  thumbnailAlt: "Abstract colorful art display evoking modern painting and gallery culture",
   html: `
     <p class="lead text-xl text-muted-foreground">
       Pablo Ruiz Picasso was born in Malaga, Spain, in 1881, and by the time he died in France in 1973 he had lived through more artistic identities than most painters manage in ten careers. He was a child prodigy who could draw like an adult before most children could write neatly. His father, an art teacher, recognized the talent early and moved the family to support it. Young Pablo studied in Barcelona and later Paris, the city that would become his creative home for most of his life. What makes Picasso impossible to reduce to a single style is exactly what makes his timeline worth following. He did not slowly refine one look until perfection. He jumped. When one visual language felt exhausted, he broke it and built another, often dragging the entire art world with him. To understand Picasso is to understand a series of chapters, each with its own color, subject matter, and emotional temperature.       Walk through them in order and you see not just biography but the history of modern art compressed into one restless life. Museums still argue about how to label him: painter, sculptor, printmaker, ceramicist, stage designer. He was all of them, often in the same year.

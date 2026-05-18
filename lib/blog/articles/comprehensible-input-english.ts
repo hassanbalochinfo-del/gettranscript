@@ -6,6 +6,8 @@ export const comprehensibleInputEnglishPost: BlogPost = {
   date: "2026-05-15",
   excerpt:
     "Memorizing vocabulary and grammar drills often stall progress. Learn why comprehensible input—understandable English you enjoy—is the real engine of fluency.",
+  thumbnail: "https://images.unsplash.com/photo-1543269865-cbf427effbad?w=1400&q=80&auto=format&fit=crop",
+  thumbnailAlt: "Student studying with headphones and a laptop in a quiet library setting",
   html: `
     <p class="lead text-xl text-muted-foreground">
       Most English learners work hard for years—vocabulary lists, grammar rules, textbooks, classes, tutors—yet still freeze in real

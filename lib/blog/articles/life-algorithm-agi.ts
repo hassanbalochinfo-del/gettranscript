@@ -6,6 +6,8 @@ export const lifeAlgorithmAgiPost: BlogPost = {
   date: "2026-05-22",
   excerpt:
     "What if your body is just hardware running information? From DNA as code to LLMs and emergence in physics—a look at whether life is computation and AGI is inevitable.",
+  thumbnail: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1400&q=80&auto=format&fit=crop",
+  thumbnailAlt: "Futuristic artificial intelligence concept representing computation and consciousness",
   html: `
     <p class="lead text-xl text-muted-foreground">
       What if your body is just a piece of hardware? Most of us think of life as cells, DNA, and blood. But there is a view that says life is really just information processing. If life is just a set of calculations, then biology is just one way to run the program. This changes how we look at Artificial General Intelligence (AGI). If we build a machine that can process information the same way we do, we aren't just making a tool. We are creating a new form of life.

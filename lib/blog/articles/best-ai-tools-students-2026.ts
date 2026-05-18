@@ -6,6 +6,8 @@ export const bestAiToolsStudents2026Post: BlogPost = {
   date: "2026-05-17",
   excerpt:
     "From NotebookLM and ChatGPT to Otter.ai and Anki—these AI study tools help students learn faster without replacing real effort, discipline, or understanding.",
+  thumbnail: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1400&q=80&auto=format&fit=crop",
+  thumbnailAlt: "Students studying together with laptops and notebooks in a bright classroom",
   html: `
     <p class="lead text-xl text-muted-foreground">
       Being a student in 2026 is not like ten years ago. When something was confusing, you waited for a teacher, dug through textbooks,

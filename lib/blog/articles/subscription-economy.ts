@@ -6,6 +6,8 @@ export const subscriptionEconomyPost: BlogPost = {
   date: "2026-05-26",
   excerpt:
     "From printers to software to streaming—monthly payments are replacing ownership. How the subscription economy works, why companies love it, and what consumers lose when access replaces buying.",
+  thumbnail: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1400&q=80&auto=format&fit=crop",
+  thumbnailAlt: "Person using a credit card for contactless payment representing recurring monthly charges",
   html: `
     <p class="lead text-xl text-muted-foreground">
       Subscriptions used to feel simple. You paid for a newspaper, a magazine, cable TV, or maybe a monthly gym membership. Today, the idea has spread into almost every part of life. Software, music, movies, storage, cars, printers, mattresses, games, fitness apps, security cameras, and even basic product features are now locked behind monthly payments. At first, this can feel convenient. Paying a small amount each month sounds easier than buying something expensive upfront. But over time, the cost becomes much less obvious. A printer that costs $160 to buy might be offered for $8 per month, but after two years, the customer may have paid more than the original price and still not actually own the device. That is the real problem with the subscription economy: it slowly turns ownership into access. Instead of buying something once and controlling it, consumers keep paying just to keep using products that feel like they should already belong to them.
