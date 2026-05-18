@@ -1,3 +1,5 @@
+import { goldInvestment2026Post } from "./articles/gold-investment-2026"
+import { differinGelBenefitsPost } from "./articles/differin-gel-benefits"
 import { residencyWithoutMillionsPost } from "./articles/residency-without-millions"
 import { bestAiToolsStudents2026Post } from "./articles/best-ai-tools-students-2026"
 import { nolanOdyssey2026Post } from "./articles/nolan-odyssey-2026"
@@ -14,6 +16,8 @@ export type BlogPost = {
 }
 
 export const BLOG_POSTS: BlogPost[] = [
+  goldInvestment2026Post,
+  differinGelBenefitsPost,
   residencyWithoutMillionsPost,
   bestAiToolsStudents2026Post,
   nolanOdyssey2026Post,
