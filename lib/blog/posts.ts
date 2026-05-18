@@ -1,3 +1,4 @@
+import { neuromorphicComputingPost } from "./articles/neuromorphic-computing"
 import { goldInvestment2026Post } from "./articles/gold-investment-2026"
 import { differinGelBenefitsPost } from "./articles/differin-gel-benefits"
 import { residencyWithoutMillionsPost } from "./articles/residency-without-millions"
@@ -16,6 +17,7 @@ export type BlogPost = {
 }
 
 export const BLOG_POSTS: BlogPost[] = [
+  neuromorphicComputingPost,
   goldInvestment2026Post,
   differinGelBenefitsPost,
   residencyWithoutMillionsPost,
