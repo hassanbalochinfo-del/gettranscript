@@ -1,4 +1,5 @@
 import { videoSourceQualityGuide } from "./articles/video-source-quality-guide"
+import { whyWeNeedSubtitlesPost } from "./articles/why-we-need-subtitles"
 
 export type BlogPost = {
   slug: string
@@ -9,6 +10,7 @@ export type BlogPost = {
 }
 
 export const BLOG_POSTS: BlogPost[] = [
+  whyWeNeedSubtitlesPost,
   videoSourceQualityGuide,
   {
     slug: "get-youtube-transcript-fast",
