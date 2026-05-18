@@ -1,3 +1,4 @@
+import { nolanOdyssey2026Post } from "./articles/nolan-odyssey-2026"
 import { comprehensibleInputEnglishPost } from "./articles/comprehensible-input-english"
 import { videoSourceQualityGuide } from "./articles/video-source-quality-guide"
 import { whyWeNeedSubtitlesPost } from "./articles/why-we-need-subtitles"
@@ -11,6 +12,7 @@ export type BlogPost = {
 }
 
 export const BLOG_POSTS: BlogPost[] = [
+  nolanOdyssey2026Post,
   comprehensibleInputEnglishPost,
   whyWeNeedSubtitlesPost,
   videoSourceQualityGuide,
