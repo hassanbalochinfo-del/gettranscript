@@ -1,3 +1,5 @@
+import { ramPricesHighPost } from "./articles/ram-prices-high"
+import { solarGreenEnergyPost } from "./articles/solar-green-energy"
 import { boredomBenefitsPost } from "./articles/boredom-benefits"
 import { subscriptionEconomyPost } from "./articles/subscription-economy"
 import { techFailsPost } from "./articles/tech-fails"
@@ -23,6 +25,8 @@ export type BlogPost = {
 }
 
 export const BLOG_POSTS: BlogPost[] = [
+  ramPricesHighPost,
+  solarGreenEnergyPost,
   boredomBenefitsPost,
   subscriptionEconomyPost,
   techFailsPost,
