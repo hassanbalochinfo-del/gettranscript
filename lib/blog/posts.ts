@@ -1,3 +1,6 @@
+import { boredomBenefitsPost } from "./articles/boredom-benefits"
+import { subscriptionEconomyPost } from "./articles/subscription-economy"
+import { techFailsPost } from "./articles/tech-fails"
 import { lieDetectorsPost } from "./articles/lie-detectors"
 import { aiChangingJobsPost } from "./articles/ai-changing-jobs"
 import { lifeAlgorithmAgiPost } from "./articles/life-algorithm-agi"
@@ -20,6 +23,9 @@ export type BlogPost = {
 }
 
 export const BLOG_POSTS: BlogPost[] = [
+  boredomBenefitsPost,
+  subscriptionEconomyPost,
+  techFailsPost,
   lieDetectorsPost,
   aiChangingJobsPost,
   lifeAlgorithmAgiPost,
