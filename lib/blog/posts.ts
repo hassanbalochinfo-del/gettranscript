@@ -1,3 +1,6 @@
+import { lieDetectorsPost } from "./articles/lie-detectors"
+import { aiChangingJobsPost } from "./articles/ai-changing-jobs"
+import { lifeAlgorithmAgiPost } from "./articles/life-algorithm-agi"
 import { neuromorphicComputingPost } from "./articles/neuromorphic-computing"
 import { goldInvestment2026Post } from "./articles/gold-investment-2026"
 import { differinGelBenefitsPost } from "./articles/differin-gel-benefits"
@@ -17,6 +20,9 @@ export type BlogPost = {
 }
 
 export const BLOG_POSTS: BlogPost[] = [
+  lieDetectorsPost,
+  aiChangingJobsPost,
+  lifeAlgorithmAgiPost,
   neuromorphicComputingPost,
   goldInvestment2026Post,
   differinGelBenefitsPost,
