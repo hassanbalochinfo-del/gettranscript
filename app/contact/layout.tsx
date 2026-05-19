@@ -1,5 +1,4 @@
 import type { Metadata } from "next"
-import { AdSenseScript } from "@/components/adsense/AdSenseScript"
 import { siteUrl } from "@/lib/seo"
 
 export const metadata: Metadata = {
@@ -20,10 +19,5 @@ export default function ContactLayout({
 }: {
   children: React.ReactNode
 }) {
-  return (
-    <>
-      <AdSenseScript />
-      {children}
-    </>
-  )
+  return children
 }

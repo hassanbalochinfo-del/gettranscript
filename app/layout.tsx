@@ -106,6 +106,13 @@ export default function RootLayout({
     <html lang="en">
       <head>
         <meta name="google-adsense-account" content={ADSENSE_PUBLISHER_ID} />
+        {ADSENSE_PUBLISHER_ID ? (
+          <script
+            async
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_PUBLISHER_ID}`}
+            crossOrigin="anonymous"
+          />
+        ) : null}
       </head>
       <body className={`font-sans antialiased`}>
         <Script
