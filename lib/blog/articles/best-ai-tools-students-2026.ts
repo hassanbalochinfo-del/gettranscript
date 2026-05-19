@@ -3,7 +3,7 @@ import type { BlogPost } from "../posts"
 export const bestAiToolsStudents2026Post: BlogPost = {
   slug: "best-ai-tools-for-students-2026",
   title: "The Best AI Tools for Students in 2026",
-  date: "2026-05-17",
+  date: "2026-05-05",
   excerpt:
     "From NotebookLM and ChatGPT to Otter.ai and Anki—these AI study tools help students learn faster without replacing real effort, discipline, or understanding.",
   thumbnail: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1400&q=80&auto=format&fit=crop",

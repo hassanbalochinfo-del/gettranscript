@@ -3,7 +3,7 @@ import type { BlogPost } from "../posts"
 export const journalismNewsPost: BlogPost = {
   slug: "journalism-and-news-in-the-digital-age",
   title: "Journalism and News: What Still Matters When Everyone Is a Publisher",
-  date: "2026-06-01",
+  date: "2026-05-18",
   excerpt:
     "Newspapers are shrinking, algorithms decide what millions see first, and AI can draft a headline in seconds. Journalism is under pressure—but the need for verified news has never been higher.",
   thumbnail: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=1400&q=80&auto=format&fit=crop",

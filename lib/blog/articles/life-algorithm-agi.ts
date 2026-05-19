@@ -3,7 +3,7 @@ import type { BlogPost } from "../posts"
 export const lifeAlgorithmAgiPost: BlogPost = {
   slug: "life-algorithm-biology-computation-agi",
   title: "The Life Algorithm: Is Biology Just Complex Computation Leading to AGI?",
-  date: "2026-05-22",
+  date: "2026-05-10",
   excerpt:
     "What if your body is just hardware running information? From DNA as code to LLMs and emergence in physics—a look at whether life is computation and AGI is inevitable.",
   thumbnail: "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1400&q=80&auto=format&fit=crop",

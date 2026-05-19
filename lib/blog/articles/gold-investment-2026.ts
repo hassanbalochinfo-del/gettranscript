@@ -3,7 +3,7 @@ import type { BlogPost } from "../posts"
 export const goldInvestment2026Post: BlogPost = {
   slug: "is-gold-still-safe-investment-2026",
   title: "Is Gold Still a Safe Investment in 2026?",
-  date: "2026-05-20",
+  date: "2026-05-08",
   excerpt:
     "Wars, inflation, and currency fears are pushing gold to record highs—but is it truly safe? What gold protects against, what it does not, and how to use it wisely in 2026.",
   thumbnail: "https://images.unsplash.com/photo-1610375461246-83df859d849d?w=1400&q=80&auto=format&fit=crop",

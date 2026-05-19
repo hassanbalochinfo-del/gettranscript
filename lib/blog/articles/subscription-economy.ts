@@ -3,7 +3,7 @@ import type { BlogPost } from "../posts"
 export const subscriptionEconomyPost: BlogPost = {
   slug: "why-everything-is-becoming-a-subscription",
   title: "Why Everything Is Becoming a Subscription",
-  date: "2026-05-26",
+  date: "2026-05-14",
   excerpt:
     "From printers to software to streaming—monthly payments are replacing ownership. How the subscription economy works, why companies love it, and what consumers lose when access replaces buying.",
   thumbnail: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=1400&q=80&auto=format&fit=crop",

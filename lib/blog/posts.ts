@@ -54,7 +54,7 @@ export const BLOG_POSTS: BlogPost[] = [
   {
     slug: "get-youtube-transcript-fast",
     title: "How to Get a YouTube Transcript Instantly",
-    date: "2025-01-01",
+    date: "2026-04-30",
     excerpt: "Paste a YouTube link, enable timestamps, and download a clean transcript in seconds.",
     thumbnail: "https://images.unsplash.com/photo-1611162616475-46b635cb6868?w=1400&q=80&auto=format&fit=crop",
     thumbnailAlt: "YouTube video on a screen for transcript extraction",
@@ -71,7 +71,7 @@ export const BLOG_POSTS: BlogPost[] = [
   {
     slug: "timestamps-make-transcripts-better",
     title: "Why Timestamps Make Transcripts More Useful",
-    date: "2025-01-02",
+    date: "2026-04-29",
     excerpt: "Timestamps help you jump to the exact moment and keep quotes verifiable.",
     thumbnail: "https://images.unsplash.com/photo-1593784991095-a205069470b6?w=1400&q=80&auto=format&fit=crop",
     thumbnailAlt: "Video editing timeline representing transcript timestamps",

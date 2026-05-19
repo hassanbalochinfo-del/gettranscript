@@ -3,7 +3,7 @@ import type { BlogPost } from "../posts"
 export const ramPricesHighPost: BlogPost = {
   slug: "why-ram-prices-are-so-high",
   title: "Why RAM Prices Are So High Right Now (And AI Is Part of the Story)",
-  date: "2026-05-29",
+  date: "2026-05-17",
   excerpt:
     "That 32GB DDR5 kit you bookmarked last year? It probably costs nearly double now. The spike is not random—memory makers are chasing AI money, and PC builders are paying for it.",
   thumbnail: "https://images.unsplash.com/photo-1591488320449-011701bb6704?w=1400&q=80&auto=format&fit=crop",

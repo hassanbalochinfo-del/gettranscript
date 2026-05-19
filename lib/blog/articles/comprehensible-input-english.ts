@@ -3,7 +3,7 @@ import type { BlogPost } from "../posts"
 export const comprehensibleInputEnglishPost: BlogPost = {
   slug: "become-fluent-english-comprehensible-input",
   title: "The Only Way to Become Fluent in English: Why Comprehensible Input Works",
-  date: "2026-05-15",
+  date: "2026-05-03",
   excerpt:
     "Memorizing vocabulary and grammar drills often stall progress. Learn why comprehensible input—understandable English you enjoy—is the real engine of fluency.",
   thumbnail: "https://images.unsplash.com/photo-1543269865-cbf427effbad?w=1400&q=80&auto=format&fit=crop",

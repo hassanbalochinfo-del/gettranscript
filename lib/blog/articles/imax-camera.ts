@@ -3,7 +3,7 @@ import type { BlogPost } from "../posts"
 export const imaxCameraPost: BlogPost = {
   slug: "imax-camera-how-it-works",
   title: "The IMAX Camera: Why the Biggest Screen in Cinema Needs a Different Kind of Machine",
-  date: "2026-05-31",
+  date: "2026-05-19",
   excerpt:
     "IMAX is not just a bigger screen—it is a different film format, camera, sound system, and philosophy. Here is how IMAX cameras work and why directors like Nolan keep betting on them.",
   thumbnail: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1400&q=80&auto=format&fit=crop",

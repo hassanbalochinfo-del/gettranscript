@@ -3,7 +3,7 @@ import type { BlogPost } from "../posts"
 export const aiChangingJobsPost: BlogPost = {
   slug: "ai-changing-jobs-faster-than-people-realize",
   title: "AI Is Changing Jobs Faster Than Most People Realize",
-  date: "2026-05-23",
+  date: "2026-05-11",
   excerpt:
     "Companies are investing billions in AI while cutting entry-level hiring. The jobs aren't vanishing overnight—but the value of average, repetitive work is. Here's what that means for your career.",
   thumbnail: "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=1400&q=80&auto=format&fit=crop",

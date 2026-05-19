@@ -3,7 +3,7 @@ import type { BlogPost } from "../posts"
 export const lieDetectorsPost: BlogPost = {
   slug: "why-lie-detectors-cant-reliably-detect-lies",
   title: "Why Lie Detectors Still Can't Reliably Detect Lies",
-  date: "2026-05-24",
+  date: "2026-05-12",
   excerpt:
     "Polygraphs look scientific in movies and celebrity interviews—but research shows humans spot lies barely better than chance, and machines measure stress, not deception.",
   thumbnail: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1400&q=80&auto=format&fit=crop",

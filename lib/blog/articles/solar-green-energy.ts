@@ -3,7 +3,7 @@ import type { BlogPost } from "../posts"
 export const solarGreenEnergyPost: BlogPost = {
   slug: "solar-green-energy-future-of-power",
   title: "Solar Green Energy: The Quiet Revolution Reshaping How the World Gets Power",
-  date: "2026-05-28",
+  date: "2026-05-16",
   excerpt:
     "Solar panel costs have collapsed, efficiency keeps rising, and rooftops, farms, and deserts are quietly becoming power plants. A clear look at how solar energy works, what it costs, and why it is winning.",
   thumbnail: "https://images.unsplash.com/photo-1509391366360-2e959784a276?w=1400&q=80&auto=format&fit=crop",

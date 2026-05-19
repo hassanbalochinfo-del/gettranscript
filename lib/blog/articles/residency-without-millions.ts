@@ -3,7 +3,7 @@ import type { BlogPost } from "../posts"
 export const residencyWithoutMillionsPost: BlogPost = {
   slug: "40-countries-residency-without-investing-millions",
   title: "40 Countries That Can Give You Residency Without Investing Millions",
-  date: "2026-05-18",
+  date: "2026-05-06",
   excerpt:
     "Country-by-country guide: residency routes without million-dollar investments, plus which paths can lead to citizenship and typical timelines.",
   thumbnail: "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=1400&q=80&auto=format&fit=crop",

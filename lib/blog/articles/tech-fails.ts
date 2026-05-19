@@ -3,7 +3,7 @@ import type { BlogPost } from "../posts"
 export const techFailsPost: BlogPost = {
   slug: "dumbest-tech-fails-of-all-time",
   title: "The Dumbest Tech Fails of All Time",
-  date: "2026-05-25",
+  date: "2026-05-13",
   excerpt:
     "From children's ovens that burned fingers to robots drowning in fountains—how billion-dollar companies still launch products that explode, mislead, or fail at the one job they were built for.",
   thumbnail: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=1400&q=80&auto=format&fit=crop",

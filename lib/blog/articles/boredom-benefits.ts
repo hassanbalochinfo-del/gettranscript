@@ -3,7 +3,7 @@ import type { BlogPost } from "../posts"
 export const boredomBenefitsPost: BlogPost = {
   slug: "why-being-bored-might-be-good-for-you",
   title: "Why Being Bored Might Actually Be Good for You",
-  date: "2026-05-27",
+  date: "2026-05-15",
   excerpt:
     "We reach for our phones the second silence appears—but psychologists say boredom activates the brain's default mode network, where reflection, creativity, and meaning actually begin.",
   thumbnail: "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=1400&q=80&auto=format&fit=crop",

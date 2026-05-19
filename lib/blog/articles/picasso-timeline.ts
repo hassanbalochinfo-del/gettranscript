@@ -3,7 +3,7 @@ import type { BlogPost } from "../posts"
 export const picassoTimelinePost: BlogPost = {
   slug: "pablo-picasso-art-timeline",
   title: "Pablo Picasso: An Art Timeline From Blue Period Despair to Cubist Revolution",
-  date: "2026-05-30",
+  date: "2026-05-20",
   excerpt:
     "Picasso did not paint one way—he reinvented himself every decade. A chronological walk through the periods, breakthroughs, and masterpieces that made him the most discussed artist of the twentieth century.",
   thumbnail: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=1400&q=80&auto=format&fit=crop",

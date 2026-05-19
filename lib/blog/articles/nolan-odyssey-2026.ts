@@ -3,7 +3,7 @@ import type { BlogPost } from "../posts"
 export const nolanOdyssey2026Post: BlogPost = {
   slug: "christopher-nolan-the-odyssey-2026-movie",
   title: "The Odyssey Movie: Why Christopher Nolan’s Greek Epic Could Be One of 2026’s Biggest Films",
-  date: "2026-05-16",
+  date: "2026-05-04",
   excerpt:
     "After Oppenheimer, Christopher Nolan turns to Homer’s epic with IMAX scale, a star-studded cast, and a story built on survival, memory, and the long road home.",
   thumbnail: "https://images.unsplash.com/photo-1478720568477-152d9b164e26?w=1400&q=80&auto=format&fit=crop",

@@ -3,7 +3,7 @@ import type { BlogPost } from "../posts"
 export const neuromorphicComputingPost: BlogPost = {
   slug: "neuromorphic-computing-biological-breakthrough",
   title: "The Biological Breakthrough: How Neuromorphic Computing Could Replace Silicon",
-  date: "2026-05-21",
+  date: "2026-05-09",
   excerpt:
     "Scientists taught human neurons to play Pong in 2022. Neuromorphic computing could replace rigid silicon chips with brain-like systems that learn, adapt, and use a fraction of the power.",
   thumbnail: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=1400&q=80&auto=format&fit=crop",

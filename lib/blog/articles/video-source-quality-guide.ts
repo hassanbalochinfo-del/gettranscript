@@ -4,7 +4,7 @@ export const videoSourceQualityGuide: BlogPost = {
   slug: "theater-vs-camera-blu-ray-remux-streaming-video-quality-guide",
   title:
     "Theater vs. Camera vs. Blu-ray vs. Remux vs. Streaming: A Complete Guide to Video Source Quality",
-  date: "2026-05-13",
+  date: "2026-05-01",
   excerpt:
     "Learn how theatrical DCP, Blu-ray, Remux, streaming, and camera recordings differ in bitrate, color, HDR, and audio—and which format fits your setup.",
   thumbnail: "https://images.unsplash.com/photo-1489599849927-2ee91cede3ba?w=1200&q=80&auto=format&fit=crop",

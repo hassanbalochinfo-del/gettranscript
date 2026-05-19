@@ -3,7 +3,7 @@ import type { BlogPost } from "../posts"
 export const whyWeNeedSubtitlesPost: BlogPost = {
   slug: "why-we-all-need-subtitles-now",
   title: "Why We All Need Subtitles Now: How Captions Became the Default Way to Watch",
-  date: "2026-05-14",
+  date: "2026-05-02",
   excerpt:
     "From TikTok to Netflix, captions went from an accessibility feature to the default way millions of people watch video—here’s why, and what it means for creators.",
   thumbnail: "https://images.unsplash.com/photo-1611162616475-46b635cb6868?w=1400&q=80&auto=format&fit=crop",

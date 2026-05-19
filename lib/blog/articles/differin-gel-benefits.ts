@@ -3,7 +3,7 @@ import type { BlogPost } from "../posts"
 export const differinGelBenefitsPost: BlogPost = {
   slug: "5-amazing-benefits-of-using-differin-gel",
   title: "5 Amazing Benefits Of Using Differin Gel",
-  date: "2026-05-19",
+  date: "2026-05-07",
   excerpt:
     "Differin Gel (adapalene) is one of the most trusted topical retinoids for acne. Here are five science-backed benefits, how to use it safely, and what to expect.",
   thumbnail: "https://images.unsplash.com/photo-1556228720-195a672e8a03?w=1400&q=80&auto=format&fit=crop",
