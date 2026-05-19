@@ -124,3 +124,19 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* CookieYes: keep nav/footer links clickable; move floating prefs button off footer links */
+.cky-consent-container,
+.cky-overlay,
+.cky-modal {
+  z-index: 9998 !important;
+}
+
+.cky-btn-revisit-wrapper,
+.cky-revisit-bottom-left,
+[data-cky-tag="revisit-consent"] {
+  left: auto !important;
+  right: 1rem !important;
+  bottom: 1rem !important;
+  z-index: 9999 !important;
+}

@@ -37,8 +37,12 @@ export default function BlogIndexPage() {
             {BLOG_POSTS.map((p) => {
               const thumb = getPostThumbnail(p)
               return (
-                <Link key={p.slug} href={`/blog/${p.slug}`} className="group block h-full">
-                  <Card className="h-full overflow-hidden border-border/60 transition-colors hover:bg-muted/20">
+                <Link
+                  key={p.slug}
+                  href={`/blog/${p.slug}`}
+                  className="group relative z-10 block h-full"
+                >
+                  <Card className="pointer-events-none h-full overflow-hidden border-border/60 transition-colors group-hover:bg-muted/20">
                     <div className="relative aspect-[16/9] w-full overflow-hidden bg-muted">
                       <Image
                         src={thumb.src}
