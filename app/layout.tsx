@@ -6,6 +6,8 @@ import { Analytics } from "@vercel/analytics/next"
 import { Toaster } from "@/components/ui/sonner"
 import { Providers } from "@/components/providers"
 import { ADSENSE_PUBLISHER_ID } from "@/lib/adsense/config"
+import { MaintenanceScreen } from "@/components/maintenance-screen"
+import { SITE_UNAVAILABLE } from "@/lib/maintenance"
 import { siteUrl } from "@/lib/seo"
 import "./globals.css"
 
@@ -105,44 +107,54 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <meta name="google-adsense-account" content={ADSENSE_PUBLISHER_ID} />
-        {ADSENSE_PUBLISHER_ID ? (
-          <script
-            async
-            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_PUBLISHER_ID}`}
-            crossOrigin="anonymous"
-          />
+        {!SITE_UNAVAILABLE ? (
+          <>
+            <meta name="google-adsense-account" content={ADSENSE_PUBLISHER_ID} />
+            {ADSENSE_PUBLISHER_ID ? (
+              <script
+                async
+                src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_PUBLISHER_ID}`}
+                crossOrigin="anonymous"
+              />
+            ) : null}
+          </>
         ) : null}
       </head>
       <body className={`font-sans antialiased`}>
-        <Script
-          id="cookieyes"
-          src="https://cdn-cookieyes.com/client_data/2dcd820386a82d3317c627d1/script.js"
-          strategy="afterInteractive"
-        />
-        <Script
-          id="gtag-js"
-          src="https://www.googletagmanager.com/gtag/js?id=G-C6FB75Q6Y1"
-          strategy="afterInteractive"
-        />
-        <Script
-          id="gtag-init"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `
+        {SITE_UNAVAILABLE ? (
+          <MaintenanceScreen />
+        ) : (
+          <>
+            <Script
+              id="cookieyes"
+              src="https://cdn-cookieyes.com/client_data/2dcd820386a82d3317c627d1/script.js"
+              strategy="afterInteractive"
+            />
+            <Script
+              id="gtag-js"
+              src="https://www.googletagmanager.com/gtag/js?id=G-C6FB75Q6Y1"
+              strategy="afterInteractive"
+            />
+            <Script
+              id="gtag-init"
+              strategy="afterInteractive"
+              dangerouslySetInnerHTML={{
+                __html: `
               window.dataLayer = window.dataLayer || [];
               function gtag(){dataLayer.push(arguments);}
               gtag('js', new Date());
               gtag('config', 'G-C6FB75Q6Y1');
               gtag('config', 'AW-17823016947');
             `,
-          }}
-        />
-        <Providers>
-          {children}
-          <Toaster />
-        </Providers>
-        <Analytics />
+              }}
+            />
+            <Providers>
+              {children}
+              <Toaster />
+            </Providers>
+            <Analytics />
+          </>
+        )}
       </body>
     </html>
   )

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/db"
+import { SITE_UNAVAILABLE, apiUnavailableResponse } from "@/lib/maintenance"
 
 export const runtime = "nodejs"
 
@@ -108,6 +109,8 @@ function pickTranscriptSegments(data: any): { segments: Array<{ text: string; st
  * Returns transcript if it exists, otherwise 404
  */
 export async function GET(req: NextRequest) {
+  if (SITE_UNAVAILABLE) return apiUnavailableResponse()
+
   try {
     const searchParams = req.nextUrl.searchParams
     const videoId = searchParams.get("videoId")
@@ -160,6 +163,8 @@ export async function GET(req: NextRequest) {
  * Body: { url, format?, sendMetadata?, requestId? }
  */
 export async function POST(req: NextRequest) {
+  if (SITE_UNAVAILABLE) return apiUnavailableResponse()
+
   try {
     const body = await req.json()
     const { url, format = "json", sendMetadata = false, requestId } = body
